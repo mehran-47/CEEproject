@@ -1,0 +1,13 @@
+{
+    "ssh":{
+        "ip":"10.118.37.165",
+        "username":"ceeadm",
+        "password":"#Ce3Adm1N#",
+        "connectattempts":3,
+        "fetchinterval":3
+    },
+    "guiserver":{
+        "ip":"142.133.117.154",
+        "port":8080
+    }
+}
