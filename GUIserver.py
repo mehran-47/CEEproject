@@ -24,6 +24,8 @@ def load_config():
         SSHIP, SSHUser, SSHPw = configDict['ssh']['ip'], configDict['ssh']['username'], configDict['ssh']['password']
         SSHConnectAttempts, fetchInterval = configDict['ssh']['connectattempts'], float(configDict['ssh']['fetchinterval'])
         GUIIP, GUIPort = configDict['guiserver']['ip'], configDict['guiserver']['port']
+        with open(root_dir+'gui_config.json', 'w') as guiconF:
+            guiconF.write(json.dumps({'ajaxlink':'http://'+GUIIP+':'+str(GUIPort)}))
 
 def update_with_commands(commandList):
     ps = pxssh.pxssh()
@@ -54,8 +56,8 @@ class GUIHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
-                #with open('sample_output.txt', 'r') as f: GUI_json = service_list_to_json(f.read().splitlines())
                 global GUI_json
+                #with open('sample_output.txt', 'r') as f: GUI_json = service_list_to_json(f.read().splitlines())
                 self.wfile.write(bytes(GUI_json, 'UTF-8'))
                 return
             elif os.path.isfile(root_dir + self.path):
@@ -87,4 +89,4 @@ if __name__ == '__main__':
         update_with_commands(['nova service-list'])
     except:
         print("\nStopping GUI server and SSH-pulling.")
-        GUIserverThread.join()
+        #GUIserverThread.join()
