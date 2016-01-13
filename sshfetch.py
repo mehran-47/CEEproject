@@ -9,22 +9,36 @@ def execute_commands(sshHandle, commList, rettype='list'):
         sshHandle.prompt()
     return sshHandle.before.decode('UTF-8').splitlines()[1:] if rettype=='list' else sshHandle.before.decode('UTF-8')
 
-def service_list_to_json(outputList):
+def service_list_to_dict(outputList):
     toRet = {}
     for aNodesEntry in outputList[3:-1]:
         theEntryListed = aNodesEntry.split('|')[1:]
-        if theEntryListed[2] not in toRet:
-            hostName = "".join(theEntryListed[2].split())
+        hostName = "".join(theEntryListed[2].split())
+        if hostName not in toRet:
             toRet[hostName] = {}
             toRet[hostName]['isEnabled'] = "".join(theEntryListed[4].split())
             toRet[hostName]['state'] = "".join(theEntryListed[5].split())
             toRet[hostName]['updatedAt'] = "".join(theEntryListed[-3].split())
-    return json.dumps(toRet)
-    #return toRet
+    return toRet
+
+def app_list_to_dict(outputList):
+    toRet = {}
+    for anAppEntry in outputList[3:-1]:
+        theEntryListed = anAppEntry.split('|')[1:]
+        hostName = "".join(theEntryListed[1].split())
+        appName = "".join(theEntryListed[2].split())
+        if hostName not in toRet:
+            toRet[hostName] = {}
+            toRet[hostName]['applications'] = [appName]
+        elif appName not in toRet[hostName]['applications']:
+            toRet[hostName]['applications'] += [appName]
+    return toRet
+
 
 if __name__=='__main__':
     p = pprint.PrettyPrinter()
-    with open('sample_output.txt', 'r') as f: p.pprint(service_list_to_json(f.read().splitlines()))
+    #with open('sample_output.txt', 'r') as f: p.pprint(service_list_to_dict(f.read().splitlines()))
+    with open('dummy_outputs/applications.txt', 'r') as f: p.pprint(app_list_to_dict(f.read().splitlines()))
     """  
     if argv[2:]:
         ps = pxssh.pxssh()

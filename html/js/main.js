@@ -15,7 +15,6 @@ function setLinkAndParseHTML(text, parserFunction){
 	ajaxLink = parsedConfig.ajaxlink;
 	getAndExecuteWrapper();
 	var intervalExec = setInterval(getAndExecuteWrapper, 3000);
-	//getAndExecute(parsedConfig.ajaxlink, JSONToHTML);
 }
 
 function getAndExecute(link, callback){
@@ -38,11 +37,18 @@ function getAndExecuteWrapper(){
 /////////////////////////DOM functions///////////////////////////////////////////////////
 
 function JSONToHTML(text){
-	var data = JSON.parse(text);
+	try{
+		var data = JSON.parse(text);
+	}catch(err){
+		var data = {};
+		if(window.console && window.console.log){
+			console.log(err.description);
+		}
+	}
 	var nodes = [];
 	for(var aNode in data){
 		if(aNode.match(/cic\-/i))
-			nodes.unshift(createDOMElement('div', '<h3>'+aNode+'</h3>', 'eaCEEGUI-raNode', aNode));
+			nodes.unshift(createDOMElement('div', '<h3>'+aNode+'</h3>', 'eaCEEGUI-raNode eaCEEGUI-raNode-cic ebBgColor_darkBlue', aNode));
 		else
 			nodes.push(createDOMElement('div', '<h3>'+aNode+'</h3>', 'eaCEEGUI-raNode', aNode));	
 	}
@@ -54,16 +60,22 @@ function JSONToHTML(text){
 		detailsHTML = '<div><p><span>State : </span>'+data[nodes[i].id]['state'] +'</p></div>'+
 					  '<div><p><span>Status : </span>'+data[nodes[i].id]['isEnabled'] +'</p></div>';
 					  //'<div><p><span>Updated at : </span>'+data[nodes[i].id]['updatedAt'] +'</p></div>';
-		//createDOMElementAndAdd('div', nodes[i], detailsHTML, '', '');
-		if(data[nodes[i].id]['state']=='up'){
-			nodes[i].className += ' ebBorderColor_green_60';
-		}else{
-			nodes[i].className += ' ebBorderColor_grey_20';
-		}
-		if(data[nodes[i].id]['isEnabled']=='enabled'){
-			nodes[i].getElementsByTagName('h3')[0].className += ' ebColor_darkGreen_60';
-		}else{
-			nodes[i].getElementsByTagName('h3')[0].className += ' ebColor_black_60';
+		if(!nodes[i].id.match(/cic\-/i)){
+			if(data[nodes[i].id]['state']=='up'){
+				nodes[i].className += ' ebBgColor_darkBlue_80';
+			}else{
+				nodes[i].className += ' ebBgColor_grey_80';
+			}
+			if(data[nodes[i].id]['isEnabled']=='enabled'){
+				nodes[i].getElementsByTagName('h3')[0].className += ' ebBgColor_darkBlue_80';
+			}else{
+				nodes[i].getElementsByTagName('h3')[0].className += ' ebBgColor_grey_80';
+			}
+		}		
+		if('applications' in data[nodes[i].id]){
+			for(var anApp in data[nodes[i].id]['applications']){
+				createDOMElementAndAdd('div', nodes[i] , data[nodes[i].id]['applications'][anApp], 'eaCEEGUI-raNode-raApp', data[nodes[i].id]['applications'][anApp]+'-'+nodes[i].id);
+			}
 		}
 		nodesContainer.appendChild(nodes[i]);
 	}
