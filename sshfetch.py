@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import time, json, pprint
+import time, json, pprint, re
 from sys import argv
-from pexpect import pxssh
+from pexpect import pxssh, spawn
+from queue import Queue
 
 def execute_commands(sshHandle, commList, rettype='list'):
     for command in commList:
@@ -33,21 +34,31 @@ def app_list_to_dict(outputList):
         elif appName not in toRet[hostName]['applications']:
             toRet[hostName]['applications'] += [appName]
     return toRet
+            
+
+def setConfigIPToActiveCIC_1():
+    ps, ps1 = (pxssh.pxssh(),)*2 
+    with open('config.json', 'r') as conF:
+        configDict = json.loads(conF.read())
+        ip, cic_ips, user, pw = configDict['ssh']['ip'], configDict['ssh']['cic_ips'] ,configDict['ssh']['username'], configDict['ssh']['password']
+    if ps.login(ip, user, pw):
+        main_cic_hostname = execute_commands(ps, ['sudo crm_mon -1 | grep cmha | grep Started'])[0].rsplit('Started')[-1]
+        main_cic_hostname = "".join(main_cic_hostname.split())
+        print('Main cic hostname:%s' %(main_cic_hostname))
+        current_host_hostname = "".join(execute_commands(ps, ['hostname -s'])[-1].split())
+        if main_cic_hostname!=current_host_hostname:
+            print("CIC IP not set to main CIC")
+        ps.logout()
+    for anIP in cic_ips:
+        pass
 
 
 if __name__=='__main__':
     p = pprint.PrettyPrinter()
-    #with open('sample_output.txt', 'r') as f: p.pprint(service_list_to_dict(f.read().splitlines()))
-    with open('dummy_outputs/applications.txt', 'r') as f: p.pprint(app_list_to_dict(f.read().splitlines()))
-    """  
-    if argv[2:]:
-        ps = pxssh.pxssh()
-        if not ps.login(argv[1], argv[2], argv[3]):
-            print(str(ps))
-        else:
-            print(execute_commands(ps, ['cd /home/mk/Downloads', 'ls -la', 'echo "hello from ssh" > toF.txt', 'ls -la'], 'string'))
-            print(execute_commands(ps, ['cat /home/mk/Documents/ceeprojSandbox/'+argv[0]]))
-    else:
-        print('Usage:\n%s <destination IP> <SSH username> <SSH password>')
-    """
-    
+    #setConfigIPToActiveCIC()
+    ps = pxssh.pxssh()
+    with open('config.json', 'r') as conF:
+        configDict = json.loads(conF.read())
+        ip, user, pw = configDict['ssh']['ip'] ,configDict['ssh']['username'], configDict['ssh']['password']
+    if ps.login(ip, user, pw):
+        print(execute_commands(ps, ['sudo tail -f /var/log/cmha.log &']))

@@ -1,0 +1,46 @@
++--------------------------------------+--------------+------------------+-------+
+| ID                                   | Host         | Name             | State |
++--------------------------------------+--------------+------------------+-------+
+| 525d2785-fc89-4d05-8e36-3fa68c4beb8e | compute-0-10 | CSCF-PL-3        |       |
+| e378305b-c3bc-4ba8-9ae1-375727b872e3 | compute-0-10 | CUDB-15A-PL-3    |       |
+| 0d976a21-690d-4381-9933-441ae7038463 | compute-0-11 | HSS-PL-4         |       |
+| ba579915-8a07-4761-9a20-8d85f1ff2bec | compute-0-11 | MTAS-15B-vRouter |       |
+| ef86d14f-bfd0-4dd0-98e6-996e802666cf | compute-0-11 | MTAS-15B-PL-3    |       |
+| 6280de67-aa66-4886-893f-bbc9806fc5fb | compute-0-12 | CUDB-15A-PL-4    |       |
+| 78416dc9-70db-4b4a-b07f-9ff9a15c8ed4 | compute-0-12 | HSS-SC-1         |       |
+| bc57d2b7-12f7-4295-b1d0-4661d8467757 | compute-0-12 | SBG-SC-2         |       |
+| 05220c66-65e6-4d8c-9ea6-0d355a841bc3 | compute-0-13 | NCB-1.15         |       |
+| 52f7bc0c-3481-4df3-aadd-88d75c38f2cf | compute-0-13 | GPB-2.2          |       |
+| 53a0aa6a-1758-4b16-b075-7fe374bc2c52 | compute-0-13 | FSB-1.11         |       |
+| b7522136-2f4a-4dae-957b-ebb49405e519 | compute-0-13 | CUDB-15A-PL-5    |       |
+| bf6282bb-8712-41b9-a6a5-852d5e5823e2 | compute-0-13 | CUDB-15A-SC-2    |       |
+| cc174cb2-1e3f-4fc5-8da5-12450a298617 | compute-0-13 | HSS-vRouter      |       |
+| cfc8461f-0a80-4b82-83d4-e448c0a28d4b | compute-0-13 | NCB-1.9          |       |
+| de4f25a1-25d6-45c8-89df-ffbc507fccf3 | compute-0-13 | vLC-1.1          |       |
+| e874ee08-4ffb-4235-8738-bb0b5de19fe1 | compute-0-13 | CSCF-SC-1        |       |
+| f85f8ee3-e24f-4cbf-b512-06fc3d144178 | compute-0-13 | MTAS-15B-PL-4    |       |
+| f912da12-09b7-47ed-88d0-63a44eaf42d9 | compute-0-13 | GPB-2.1          |       |
+| 0daaee54-9e74-4edd-8643-365954f873a9 | compute-0-14 | VLC-1            |       |
+| 215e383a-5f78-40e3-834d-5f4d35521949 | compute-0-14 | VRP-22           |       |
+| 254a67db-bd13-4121-88ed-156b3ade8a17 | compute-0-14 | VSSC-4           |       |
+| 8fd0e36f-4619-4a90-abec-4e033946d989 | compute-0-14 | VSSC-7           |       |
+| 9017254b-122c-4912-b276-241c1b542318 | compute-0-14 | VSSC-3           |       |
+| 929e74aa-2011-4bcd-b17a-65a2bf7a6416 | compute-0-14 | ecs-atlas-lsv21  |       |
+| a1819b0c-2729-41d9-b86b-8cb6ccdb83fc | compute-0-14 | VSSC-5           |       |
+| a576ff40-a082-4170-85ca-4ef6989621de | compute-0-14 | VRP-21           |       |
+| eacdda6f-804f-4b0a-8b38-186012fd7d24 | compute-0-14 | VSSC-6           |       |
+| a386e9d7-199f-4ad8-8729-5359d18b4af6 | compute-0-15 | MTAS-15B-SC-1    |       |
+| 30626025-09d5-4059-803d-b7731bdfabbb | compute-0-16 | CSCF-PL-4        |       |
+| 3ffa2fe3-74b5-42ee-9d28-15cf6465ac71 | compute-0-16 | MTAS-15B-SC-2    |       |
+| d0be1263-3257-4499-8fe2-d8a7ab8ec229 | compute-0-16 | SBG-PL-4         |       |
+| b516e48a-e112-471d-9d97-f7e45e99ff8b | compute-0-4  | SBG-PL-3         |       |
+| e5feb825-0e42-41a7-bb2e-f07be43b8efa | compute-0-5  | CSCF-SC-2        |       |
+| e5feb825-0e42-41a7-bb2e-f07be43b8efa | compute-0-7  | AAAAA            |       |
+| 46215f98-8d5c-4bbc-bb5c-baa9c83fb111 | compute-0-6  | HSS-SC-2         |       |
+| 0b08672f-faac-419a-b450-5192028d32b9 | compute-0-8  | CSCF-vRouter     |       |
+| 6ab3a939-c1c5-450d-8388-f8c943c02304 | compute-0-8  | CUDB-15A-vRouter |       |
+| f7df04da-38a8-4145-aa41-696744b45ed5 | compute-0-8  | MRSv             |       |
+| 086e7c75-a23e-4ced-ad73-ab14f4d95140 | compute-0-9  | HSS-PL-3         |       |
+| 2f618d0d-1f0f-4fa6-80d0-9b6e78074c9b | compute-0-9  | SBG-SC-1         |       |
+| 47df0844-c888-45ef-93ea-524bd7c7cf13 | compute-0-9  | CUDB-15A-PL-6    |       |
++--------------------------------------+--------------+------------------+-------+

@@ -1,0 +1,22 @@
++----+------------------+--------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host         | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+--------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-scheduler   | cic-0-1      | internal | enabled | up    | 2016-01-07T23:07:42.000000 |                 |
+| 2  | nova-conductor   | cic-0-1      | internal | enabled | up    | 2016-01-07T23:07:42.000000 |                 |
+| 4  | nova-consoleauth | cic-0-1      | internal | enabled | up    | 2016-01-07T23:07:41.000000 |                 |
+| 7  | nova-conductor   | cic-0-2      | internal | enabled | up    | 2016-01-07T23:07:43.000000 |                 |
+| 10 | nova-scheduler   | cic-0-2      | internal | enabled | up    | 2016-01-07T23:07:46.000000 |                 |
+| 13 | nova-consoleauth | cic-0-2      | internal | enabled | up    | 2016-01-07T23:07:45.000000 |                 |
+| 16 | nova-conductor   | cic-0-3      | internal | enabled | up    | 2016-01-07T23:07:49.000000 |                 |
+| 28 | nova-scheduler   | cic-0-3      | internal | enabled | up    | 2016-01-07T23:07:41.000000 |                 |
+| 31 | nova-consoleauth | cic-0-3      | internal | enabled | up    | 2016-01-07T23:07:40.000000 |                 |
+| 34 | nova-compute     | compute-0-4  | nova     | enabled | up    | 2016-01-07T22:39:09.000000 |                 |
+| 37 | nova-compute     | compute-0-12 | nova     | enabled | up    | 2016-01-07T22:39:08.000000 |                 |
+| 40 | nova-compute     | compute-0-15 | nova     | enabled | up    | 2016-01-07T22:39:04.000000 |                 |
+| 43 | nova-compute     | compute-0-5  | nova     | enabled | up    | 2016-01-07T22:39:05.000000 |                 |
+| 46 | nova-compute     | compute-0-10 | nova     | enabled | up    | 2016-01-07T22:39:02.000000 |                 |
+| 49 | nova-compute     | compute-0-14 | nova     | enabled | down  | 2016-01-07T22:39:03.000000 |                 |
+| 52 | nova-compute     | compute-0-13 | nova     | enabled | down  | 2016-01-07T22:39:03.000000 |                 |
+| 55 | nova-compute     | compute-0-16 | nova     | enabled | down  | 2016-01-07T22:39:10.000000 |                 |
+| 58 | nova-compute     | compute-0-6  | nova     | enabled | down  | 2016-01-07T22:39:10.000000 |                 |
++----+------------------+--------------+----------+---------+-------+----------------------------+-----------------+

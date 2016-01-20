@@ -1,0 +1,15 @@
+tail -f /var/log/cmha.log
+crm_mon -1 | grep cmha
+
+cmha	(ocf::heartbeat:cmha):	Started cic-0-1 
+    cmha_monitor_60000 on cic-0-1 'not running' (7): call=841, status=complete, last-rc-change='Thu Jan 14 19:46:08 2016', queued=0ms, exec=0ms
+    cmha_monitor_60000 on cic-0-3 'not running' (7): call=583, status=complete, last-rc-change='Sat Dec 19 01:28:40 2015', queued=0ms, exec=0ms
+
+
+
+
+ 2016-01-14 21:50:47 cmha: watchmen.producer.eventsender DEBUG ARGS  args: (source: Region=POD14-HP,CeeFunction=1,Tenant=b6ec0a4161884d82965d1bd70105a9e1,VM=e016acc4-6d5d-48a3-a4ed-83ce865afe21; major_type: 193; mino
+r_type: 2031702; active_severity: 5; event_type: 1; probable_cause: 165; specific_problem: VM Unavailable; additional_info: None; additional_text: {"host": "compute-0-10"}; is_stateful: True; sequence_no: None; last
+_event_time: None; sync_url: None, 'http://192.168.2.20:8997/resend_alarms'), kwargs: {}
+
+2016-01-14 21:50:53 cmha: db INFO Adding is_stateful: True; source: Region=POD14-HP,CeeFunction=1,Tenant=b6ec0a4161884d82965d1bd70105a9e1,VM=e016acc4-6d5d-48a3-a4ed-83ce865afe21; major_type: 193; minor_type: 2031702; active_severity: 1; event_type: 1; probable_cause: 165; specific_problem: VM Unavailable; additional_info: None; additional_text: {"host": "compute-0-15"}: dropping original event

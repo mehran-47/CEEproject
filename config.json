@@ -1,9 +1,9 @@
 {
     "ssh":{
-        "ip":"10.118.37.165",
+        "ip":"10.118.37.164",
+        "connectattempts":3,
         "username":"ceeadm",
         "password":"#Ce3Adm1N#",
-        "connectattempts":3,
         "fetchinterval":3
     },
     "guiserver":{
