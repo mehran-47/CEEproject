@@ -53,15 +53,15 @@
     },
     "FSB-1.11":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "GPB-2.1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "GPB-2.2":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "HSS-PL-3":{
         "isDemoCase":false,
@@ -137,7 +137,7 @@
     },
     "VLC-1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "VRP-21":{
         "isDemoCase":false,
@@ -229,6 +229,6 @@
     },
     "vLC-1.1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     }
 }

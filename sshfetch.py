@@ -30,9 +30,9 @@ def app_list_to_dict(outputList):
         appName = "".join(theEntryListed[2].split())
         if hostName not in toRet:
             toRet[hostName] = {}
-            toRet[hostName]['applications'] = [appName]
+            toRet[hostName]['applications'] = {appName:{}}
         elif appName not in toRet[hostName]['applications']:
-            toRet[hostName]['applications'] += [appName]
+            toRet[hostName]['applications'][appName] = {}
     return toRet
             
 

@@ -13,3 +13,10 @@ r_type: 2031702; active_severity: 5; event_type: 1; probable_cause: 165; specifi
 _event_time: None; sync_url: None, 'http://192.168.2.20:8997/resend_alarms'), kwargs: {}
 
 2016-01-14 21:50:53 cmha: db INFO Adding is_stateful: True; source: Region=POD14-HP,CeeFunction=1,Tenant=b6ec0a4161884d82965d1bd70105a9e1,VM=e016acc4-6d5d-48a3-a4ed-83ce865afe21; major_type: 193; minor_type: 2031702; active_severity: 1; event_type: 1; probable_cause: 165; specific_problem: VM Unavailable; additional_info: None; additional_text: {"host": "compute-0-15"}: dropping original event
+
+
+<134>Jan 21 22:09:37 cic-0-1 cmha: db INFO Adding is_stateful: True; source: Region=POD14-HP,CeeFunction=1,Tenant=b6ec0a4161884d82965d1bd70105a9e1,VM=e621e398-4734-4727-a90c-3d172b7c50b3; major_type: 193; minor_type: 2031702; active_severity: 5; event_type: 1; probable_cause: 165; specific_problem: VM Unavailable; additional_info: None; additional_text: {"host": "compute-0-10"}
+
+<134>Jan 21 22:09:58 cic-0-1 cmha: db INFO Adding is_stateful: True; source: Region=POD14-HP,CeeFunction=1,Tenant=b6ec0a4161884d82965d1bd70105a9e1,VM=e621e398-4734-4727-a90c-3d172b7c50b3; major_type: 193; minor_type: 2031702; active_severity: 1; event_type: 1; probable_cause: 165; specific_problem: VM Unavailable; additional_info: None; additional_text: {"host": "compute-0-8"}: dropping it together with yet unsent original event
+
+re.findall(r'(?<=active_severity\:)(\s+\d)', ss)

@@ -94,15 +94,14 @@ function JSONToHTML(text){
         if('applications' in data[nodes[i].id]){
             var appsContainer = createDOMElement('div', '', 'eaCEEGUI-raNode-raAppsContainer', nodes[i].id+'-appsContainer');
             for(var anApp in data[nodes[i].id]['applications']){
-                var appName = data[nodes[i].id]['applications'][anApp]
-                if(appViewConfig[appName]['visibility']){
-                    var cssClassToAdd = appViewConfig[appName]['isDemoCase'] ? 'eaCEEGUI-raNode-raApp-innerContainerDemoCase' : 'eaCEEGUI-raNode-raApp-innerContainer';
+                if(appViewConfig[anApp]['visibility']){
+                    var cssClassToAdd = appViewConfig[anApp]['isDemoCase'] ? 'eaCEEGUI-raNode-raApp-innerContainerDemoCase' : 'eaCEEGUI-raNode-raApp-innerContainer';
                     createDOMElementAndAdd(
                         'div', 
                         appsContainer, 
-                        '<div class=" '+ cssClassToAdd+'">' + data[nodes[i].id]['applications'][anApp] + '</div>', 
+                        '<div class=" '+ cssClassToAdd+'">' + anApp + '</div>', 
                         'eaCEEGUI-raNode-raApp', 
-                        data[nodes[i].id]['applications'][anApp]+'-'+nodes[i].id);
+                        anApp+'-'+nodes[i].id);
                 }
             }           
         nodes[i].appendChild(appsContainer);

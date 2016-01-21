@@ -133,6 +133,7 @@ def exportAppListToConfigFile(toExport):
     with open('html/appViewConfig.json', 'w') as appViewFile: 
         appViewFile.write(json.dumps(dictToWrite, sort_keys=True, indent=4, separators=(',', ':')))
 
+
 def _reset_updateApps():
     while True:
         global updateApps
