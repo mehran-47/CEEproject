@@ -53,12 +53,27 @@ def setConfigIPToActiveCIC_1():
         pass
 
 
+def updateWithCallLoadInfo(sshHandle):
+    with open('config.json', 'r') as conF: 
+        creds = json.loads(conF.read())['ssh_call_info']
+    if sshHandle.login(creds['ip'], creds['username'], creds['password']):
+        sshHandle.sendline(creds['command_to_send'])
+        sshHandle.prompt()
+    return json.loads(ps.before.decode('utf-8').splitlines()[-1])
+
+
 if __name__=='__main__':
     p = pprint.PrettyPrinter()
+    ps = pxssh.pxssh()
+    print(getCallLoadInfo(ps))
+    ps.logout()
     #setConfigIPToActiveCIC()
+    '''
     ps = pxssh.pxssh()
     with open('config.json', 'r') as conF:
         configDict = json.loads(conF.read())
         ip, user, pw = configDict['ssh']['ip'] ,configDict['ssh']['username'], configDict['ssh']['password']
     if ps.login(ip, user, pw):
         print(execute_commands(ps, ['sudo tail -f /var/log/cmha.log &']))
+    '''
+    print(getCallLoadInfo())

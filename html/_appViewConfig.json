@@ -1,7 +1,7 @@
 {
     "AAAAA":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "CSCF-PL-3":{
         "isDemoCase":true,
@@ -9,6 +9,10 @@
     },
     "CSCF-PL-4":{
         "isDemoCase":true,
+        "visibility":true
+    },
+    "CSCF-PL-5":{
+        "isDemoCase":false,
         "visibility":true
     },
     "CSCF-SC-1":{
@@ -20,8 +24,8 @@
         "visibility":true
     },
     "CSCF-vRouter":{
-        "isDemoCase":true,
-        "visibility":true
+        "isDemoCase":false,
+        "visibility":false
     },
     "CUDB-15A-PL-3":{
         "isDemoCase":false,
@@ -39,6 +43,10 @@
         "isDemoCase":false,
         "visibility":false
     },
+    "CUDB-15A-SC-1":{
+        "isDemoCase":false,
+        "visibility":false
+    },
     "CUDB-15A-SC-2":{
         "isDemoCase":false,
         "visibility":false
@@ -49,95 +57,131 @@
     },
     "FSB-1.11":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "GPB-2.1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "GPB-2.2":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "HSS-PL-3":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "HSS-PL-4":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "HSS-SC-1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "HSS-SC-2":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "HSS-vRouter":{
         "isDemoCase":false,
+        "visibility":false
+    },
+    "IPW-PL-3":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "IPW-PL-4":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-PL3":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-PL4":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-SC-1":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-SC-2":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-SC1":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-SC2":{
+        "isDemoCase":true,
         "visibility":true
     },
     "MRSv":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "MTAS-15B-PL-3":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "MTAS-15B-PL-4":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "MTAS-15B-SC-1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "MTAS-15B-SC-2":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "MTAS-15B-vRouter":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "NCB-1.15":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "NCB-1.9":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "SBG-PL-3":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "SBG-PL-4":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "SBG-SC-1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "SBG-SC-2":{
         "isDemoCase":false,
+        "visibility":false
+    },
+    "TestVM":{
+        "isDemoCase":true,
         "visibility":true
     },
     "VLC-1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "VRP-21":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "VRP-22":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "VSSC-3":{
         "isDemoCase":false,
@@ -159,12 +203,80 @@
         "isDemoCase":false,
         "visibility":false
     },
+    "cs-atlas2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
     "ecs-atlas-lsv21":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "ipworks":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_db1_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_db2_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_lb1_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_lb2_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_sc1_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_sc2_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_tp1_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_tp2_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_vr1_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_vr2_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_vr3_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "sapc_vr4_cxp9030138_3r1h":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "smj":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "test":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "test11":{
         "isDemoCase":false,
         "visibility":true
     },
     "vLC-1.1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     }
 }

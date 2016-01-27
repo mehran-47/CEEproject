@@ -68,11 +68,12 @@ function JSONToHTML(text){
         }
     }
     nodes = [];
+    //nodes.unshift(createDOMElement('div', '<h3>Fuel</h3>', 'eaCEEGUI-raNode eaCEEGUI-raNode-cic ebBgColor_darkBlue_80', 'FuelNode'));
     for(var aNode in data){
         if(aNode.match(/cic\-/i))
-            nodes.unshift(createDOMElement('div', '<h3>'+aNode+'</h3>', 'eaCEEGUI-raNode eaCEEGUI-raNode-cic ebBgColor_darkBlue_80', aNode));
+            nodes.unshift(createDOMElement('div', '<h3>'+aNode.split('\.domain')[0]+'</h3>', 'eaCEEGUI-raNode-cic ebBgColor_darkBlue_80', aNode));
         else
-            nodes.push(createDOMElement('div', '<h3>'+aNode+'</h3>', 'eaCEEGUI-raNode', aNode));    
+            nodes.push(createDOMElement('div', '<h3>'+aNode.split('\.domain')[0]+'</h3>', 'eaCEEGUI-raNode', aNode));    
     }
     nodesContainer = document.getElementById('contentHolder');
     nodesContainer.innerHTML = '';
@@ -109,7 +110,8 @@ function JSONToHTML(text){
         nodesContainer.appendChild(nodes[i]);
         setDemoCases();
     }
-   
+    nodesContainer.insertBefore(createDOMElement('div', '<h3>Fuel</h3>', 'ebBgColor_darkGreen_80 eaCEEGUI-raNode-cic', 'FuelNode'), nodesContainer.childNodes[0]);
+    setNodeWidth(nodes.length-3, 300);
 }
 
 function createDOMElement(elementType, HTMLstring, cssClass, elementId){
@@ -140,4 +142,18 @@ function setDemoCases(){
     fixPadding(apps);
     apps = document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase');
     fixPadding(apps);
+}
+
+function setNodeWidth(nodesNum, offset){
+    var newWidth = (document.documentElement.clientWidth-offset)/nodesNum;
+    var nodes  = document.getElementsByClassName('eaCEEGUI-raNode');
+    var loopAndSet = function(elements, nWidth){
+        for(var i=0;i<elements.length; i++){
+            elements[i].style.width = nWidth + 'px';
+        }
+    }
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode'), newWidth);
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raAppsContainer'), newWidth);
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase'), newWidth-20);
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainer'), newWidth-20);
 }

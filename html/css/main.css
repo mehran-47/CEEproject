@@ -76,6 +76,7 @@ textarea {
 .eaCEEGUI-rDetails{
     height: 160px;
     box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.45);
+    overflow: hidden;
 }
 
 .eaCEEGUI-rDetails div{
@@ -116,14 +117,16 @@ textarea {
 }
 
 .eaCEEGUI-rHeader-list li, .eaCEEGUI-rHeader-list li a{
+    /*
     background: #00285E;
-    color: #f0f0f0;
+    */
+    color: #00285E;
     display: table-cell;
-    font-size: 0.7em;
+    font-size: 0.9em;
     height: 40px;
-    text-align: center;
+    text-align: left;
     vertical-align: middle;
-    width: 170px;
+    width: 180px;
 }
 /*
 .eaCEEGUI-rHeader-list li a{
@@ -136,17 +139,22 @@ textarea {
 /*  border-right: 1px solid #e6eaef; */
     color: #00285E;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.7em;
     font-weight: normal;
-    transition:all 0.2s;
+    text-align: center;
+    transition:all 0.2s;    
 }
 
 .eaCEEGUI-rHeader-list li a.notCurrentPage:hover{
     background: #fff;
     color: #00625f;
 /*    border-right: 1px solid #99c0bf;*/
+    border-left: 1px solid #99c0bf;
+    border-right: 1px solid #99c0bf;
 }
 
+
+/*
 .eaCEEGUI-rHeader-list li:first-child  a.notCurrentPage{
     border-left: 1px solid #e6eaef;
     transition:all 0.2s;
@@ -165,7 +173,7 @@ textarea {
     border-right: 1px solid #99c0bf;
 }
 
-
+*/
 
 .eaCEEGUI-rCICContainer, .eaCEEGUI-rComputeContainer, .eaCEEGUI-raNode{
     display: inline;
@@ -175,6 +183,7 @@ textarea {
 .eaCEEGUI-rCICContainer{
     display: table;
     margin: 10px 0 0 10px;
+    padding-bottom: 20px;
 }
 
 
@@ -191,12 +200,14 @@ textarea {
 
 .eaCEEGUI-raNode-cic{
     height: 300px;
+    float: left;
     padding: 100px 8px 0 0;
     width: 40px;
+    vertical-align: middle;
 }
 
 .eaCEEGUI-raNode h3{
-    font-size: 1em;
+    font-size: 0.8em;
     margin-bottom: 0;
     font-weight: bold;
     color: white;
@@ -249,11 +260,26 @@ body .eaCEEGUI-raNode-cic h3{
    width: 100px;
 }
 
+.eaCEEGUI-raNode-raApp-innerContainer p, .eaCEEGUI-raNode-raApp-innerContainerDemoCase p{
+    font-size: 1em;
+    text-align: left;
+    margin: 0;
+}
+
+.eaCEEGUI-raNode-raApp-innerContainer-callSpaces{
+    text-align: left;
+    display: inline;
+    float: left;
+    margin: 0;
+    font-size:0.8em;
+}
+
 .eaCEEGUI-raNode-raApp-innerContainerDemoCase{
     color: #00285e;
     border:solid 1px #fff;
-    font-size: 1.3em;
+    font-size: 1.1em;
     background: rgba(255,255,255,0.8);
+    margin-bottom: 2px;
 }
 
 

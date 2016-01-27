@@ -1,13 +1,26 @@
 {
     "ssh":{
-        "ip":"10.118.37.164",
+        "ip":"10.118.37.40",
         "connectattempts":3,
-        "username":"ceeadm",
-        "password":"#Ce3Adm1N#",
+        "username":"root",
+        "password":"r00tme",
         "fetchinterval":3
     },
     "guiserver":{
         "ip":"142.133.117.154",
-        "port":8080
+        "port":8080,
+        "maxcalls":5
+    },
+    "ssh_call_info":{
+        "ip":"10.118.42.146",
+        "username":"root",
+        "password":"rootroot",
+        "command_to_send":"/cluster/home/getCalls.sh ExtNetSelPoolEntryGuiPot \"3 4\""
+    },
+    "scale_action":{
+        "ip":"10.118.37.52",
+        "user":"atlasadm",
+        "pw":"qwqwqw",
+        "scriptpath":"/home/atlasadm/CSCF_SCALE.sh"
     }
 }
