@@ -55,12 +55,13 @@ function JSONToHTML(text){
     }catch(err){
         data = {};
         xhrErrorCount++;
-        if(xhrErrorCount>10){
+        if(xhrErrorCount>2){
             clearInterval(intervalExec);
+            dropCurtain();
         }
         if(window.console){
             if(window.console.log){
-                console.log(err.description);
+                console.log(err.description);                
             }
             else if(window.console.assert){
                 console.assert(err.description);
@@ -157,4 +158,9 @@ function setNodeWidth(nodesNum, offset){
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raAppsContainer'), newWidth);
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase'), newWidth-20);
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainer'), newWidth-20);
+}
+
+function dropCurtain(){
+    var curtain = createDOMElement('div', '', 'eaCEEGUI-rCurtain', 'errorCurtain');
+    document.body.insertBefore(curtain, document.body.childNodes[0]);
 }

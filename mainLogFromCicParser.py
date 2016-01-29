@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pexpect import pxssh, spawn, TIMEOUT
 from queue import Queue
-import time, re, sys, os, logging
+import time, re, sys, os, logging, datetime
 from sshfetch import *
 from threading import Thread, Event
 
@@ -111,7 +111,8 @@ class mainLogLiveParser():
                         if self.vmIdToNameMap[anEvent['vm']]['evacuationPolicy'] is not None: 
                             self.eventsMap[anEvent['vm']] = {'host': anEvent['host'], \
                                                             'vmName' : self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else None, \
-                                                            'activeSeverity': anEvent['activeSeverity']}
+                                                            'activeSeverity': anEvent['activeSeverity'],
+                                                            'eventTime': anEvent['eventTime']}
                             #do something in self.vmIdToNameMap to alert that the vm is not available/host is in trouble
                             self.vmIdToNameMapUpdated = False
                     elif anEvent['activeSeverity']==1:
@@ -121,7 +122,7 @@ class mainLogLiveParser():
                             self.vmIdToNameMapUpdated = True
                             self.updateApps = True
                         if anEvent['vm'] in self.eventsMap:
-                            del  self.eventsMap[anEvent['vm']]                   
+                            del  self.eventsMap[anEvent['vm']]
                     qsWithRegexes['vmUnavailable']['valueQ'].task_done()
                     self.log.info('-------got from Q------%r-------------', anEvent)
                     self.log.info('-------Current Events\' Map------%r-------------', self.eventsMap)
@@ -159,7 +160,8 @@ if __name__ == '__main__':
                     'finder':[ \
                                 [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
                                 [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
-                                [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'] \
+                                [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
+                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x[-1], "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
                             ] \
                     },\
                 'valueQ': Queue()\
@@ -175,53 +177,3 @@ if __name__ == '__main__':
         for aThread in allThreads: 
             if aThread.is_alive(): 
                 aThread.join(1)
-
-
-    '''
-    getterThread = Thread(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha.log | grep -v DEBUG'], qwrs_2))
-    shouldRun.set()
-    getterThread.start()
-    try:
-        while shouldRun.is_set():
-            while not qwrs_2['vmUnavailable']['valueQ'].empty():
-                print('-------got from Q------', qwrs_2['vmUnavailable']['valueQ'].get(), '-------------')
-                qwrs_2['vmUnavailable']['valueQ'].task_done()
-            time.sleep(2)
-    except KeyboardInterrupt:
-        shouldRun.clear()
-        getterThread.join(1)
-        for qwr in qwrs_2:
-            qwrs_2[qwr]['valueQ'].join()
-        sys.exit()
-    '''
-    '''
-    qwrs_1 = {'dummy_1':\
-                {'regexes':\
-                    {'matcher':r'Successfully queried computes from novaclient:',\
-                    'finder':[[ r'\{(.+)\}', fixJson ] ]},\
-                'valueQ': Queue()},\
-            'dummy_2':\
-                {'regexes':\
-                    {'matcher':r'\<ComputeActor\(',\
-                    'finder':[[r'\((.+)\)', lambda x: x ]] }, \
-                'valueQ': Queue()\
-                }\
-            }
-    getterThread = Thread(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha.log'] | grep -v DEBUG, qwrs_1))
-    shouldRun.set()
-    getterThread.start()
-    try:
-        while shouldRun.is_set():
-            while not qwrs_1['dummy_1']['valueQ'].empty():
-                print(qwrs_1['dummy_1']['valueQ'].get(timeout=5))
-                qwrs_1['dummy_1']['valueQ'].task_done()
-            while not qwrs_1['dummy_2']['valueQ'].empty():
-                print(qwrs_1['dummy_2']['valueQ'].get(timeout=5))
-                qwrs_1['dummy_2']['valueQ'].task_done()
-            time.sleep(2)
-    except KeyboardInterrupt:
-        shouldRun.clear()
-        getterThread.join(1)
-        for qwr in qwrs_1:
-            qwrs_1[qwr]['valueQ'].join()
-    '''

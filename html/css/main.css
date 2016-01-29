@@ -282,6 +282,15 @@ body .eaCEEGUI-raNode-cic h3{
     margin-bottom: 2px;
 }
 
+.eaCEEGUI-rCurtain{
+    height:100%; 
+    width:100%; 
+    background:rgba(0,0,0,0.5); 
+    position:fixed; 
+    z-index:100;
+    transition: all 0.2s;
+}
+
 
 /* ==========================================================================
    Media Queries

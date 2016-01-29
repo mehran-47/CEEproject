@@ -206,7 +206,7 @@ class ThreadInterruptable(Thread):
                 killThreads(allThreads)
                 log.info('Killing all threads to exit program.')
             except AssertionError:
-                log.warning('Ignored AssertionError in parent class.')
+                log.warning('Ignored AssertionError in parent (threading.Thread) class.')
 
 
 class GUIHandler(BaseHTTPRequestHandler):
@@ -313,6 +313,5 @@ if __name__ == '__main__':
         threadsRunning.clear()
         for aThread in allThreads: 
             aThread._stop()
-            #time.sleep(0.3)
         node_dicts.join()      
         sys.exit()

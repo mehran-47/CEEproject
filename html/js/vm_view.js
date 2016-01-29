@@ -62,12 +62,13 @@ function JSONToHTML(text){
     }catch(err){
         data = {};
         xhrErrorCount++;
-        if(xhrErrorCount>10){
+        if(xhrErrorCount>0){
             clearInterval(intervalExec);
+            dropCurtain();
         }
         if(window.console){
             if(window.console.log){
-                console.log(err.description);
+                console.log(err.description);                
             }
             else if(window.console.assert){
                 console.assert(err.description);
@@ -241,4 +242,9 @@ function scaleIn(){
 
 function setCallReferenceNumber(){
     loadBarRefNum=document.getElementById('referenceNumber').value;
+}
+
+function dropCurtain(){
+    var curtain = createDOMElement('div', '', 'eaCEEGUI-rCurtain', 'errorCurtain');
+    document.body.insertBefore(curtain, document.body.childNodes[0]);
 }

@@ -40,19 +40,19 @@
         "visibility":true
     },
     "IPW-SC-1":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "IPW-SC-2":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "IPW-SC1":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "IPW-SC2":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "MRSv":{
@@ -68,11 +68,11 @@
         "visibility":true
     },
     "MTAS-15B-SC-1":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "MTAS-15B-SC-2":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "SBG-PL-3":{
@@ -84,11 +84,11 @@
         "visibility":true
     },
     "SBG-SC-1":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "SBG-SC-2":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "cs-atlas2":{
