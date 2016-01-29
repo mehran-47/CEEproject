@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import mimetypes, os, json, time, sys, copy
+import mimetypes, os, json, time, sys, copy, logging
 from threading import Thread, Event
 from queue import Queue, Empty as QEmpty
 from sys import argv
@@ -7,7 +7,14 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from sshfetch import *
 from pexpect import pxssh, spawn, TIMEOUT
 from mainLogFromCicParser import mainLogLiveParser
+from multiprocessing import Process as mProcess
 
+LOG_LEVELS = { 'debug':logging.DEBUG,
+            'info':logging.INFO,
+            'warning':logging.WARNING,
+            'error':logging.ERROR,
+            'critical':logging.CRITICAL,
+            }
 node_dicts = Queue(10)
 updateApps = False
 GUI_dict = {}
@@ -31,17 +38,17 @@ def setConfigIPToActiveCIC():
         current_cic_hostname = "".join(execute_commands(ps, ['hostname -s'])[-1].split())
         main_cic_hostname = execute_commands(ps, ['echo $(sudo crm_mon -1 | grep cmha| grep Started)'])[0].rsplit('Started')[-1]
         main_cic_hostname = "".join(main_cic_hostname.split())
-        print('Main cic hostname: %s.' %(main_cic_hostname))
+        log.info('Main cic hostname: %s.' %(main_cic_hostname))
         if current_cic_hostname!=main_cic_hostname:
-            print('Currently set IP in the \'config.json\' file does not belong to the main CIC, fetching main cic IP for GUI-config file. This might take upto 1 minute.')            
+            log.info('Currently set IP in the \'config.json\' file does not belong to the main CIC, fetching main cic IP for GUI-config file. This might take upto 1 minute.')            
             main_cic_ip_string = execute_commands(ps, ['ssh '+user+'@'+main_cic_hostname, 'echo $(ifconfig br-ex | grep "inet addr:")', 'exit'])[-3]
             main_cic_ip_string = ["".join(s.split()) for s in re.findall(r'(?<=inet addr:)(.+)(?=Bcast)', main_cic_ip_string)][0]
-            print('Main cic IP: %s' %(main_cic_ip_string))
+            log.info('Main cic IP: %s' %(main_cic_ip_string))
             configDict['ssh']['ip'] = main_cic_ip_string
             with open('config.json', 'w') as conF:
                 conF.write(json.dumps(configDict, indent=4, separators=(',', ':')))
         else:
-            print("Config file has the main CIC IP.")
+            log.info("Config file has the main CIC IP.")
             ps.logout()
 
 
@@ -77,7 +84,7 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
             GUI_dict.update(node_dicts.get(True, timeout=updateInterval+timeoutDelay))
             node_dicts.task_done()
         except QEmpty:
-            print("Didn't get any updated dictionary from the nodes, continuing without updating the GUI-dictionary")
+            log.warning("Didn't get any updated dictionary from the nodes, continuing without updating the GUI-dictionary")
         for aHost in GUI_dict:
             if aHost in mlp.appDictForGui:
                 GUI_dict[aHost]['applications'] = mlp.appDictForGui[aHost]['applications']
@@ -85,20 +92,7 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
                 for anApp in callLoadDict:
                     for aVm in GUI_dict[aHost]['applications']:
                         if anApp in aVm:
-                            GUI_dict[aHost]['applications'][aVm]['calls'] = callLoadDict[anApp]['calls']
-                            #print('GUI_dict callinfo:', GUI_dict[aHost]['applications'][aVm]['calls'])
-            #print('######################updating apps####################\n', mlp.appDictForGui, '\n', GUI_dict)
-        '''
-        newUpNodeCount = getUpNodeCount(GUI_dict)
-        if upNodeCount != newUpNodeCount: 
-            updateApps = True
-            upNodeCount = newUpNodeCount
-        if updateApps:
-            #Thread(target=update_with_oneoff_command, args=(['cat /home/mk/Documents/CM_HA_Demo/dummy_inputs/applications.txt'], appDict, localSSHCreds)).start()
-            Thread(target=update_with_oneoff_command, args=(['nova list --fields host,name,state'], appDict)).start()
-            updateApps=False
-        reloadApps(GUI_dict, appDict)
-        '''
+                            GUI_dict[aHost]['applications'][aVm]['calls'] = callLoadDict[anApp]['calls']                            
         time.sleep(updateInterval)
 
 
@@ -110,13 +104,12 @@ def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSH
             if ps.login(sshInfo['ip'], sshInfo['user'], sshInfo['pw']):
                 while threadsRunning.is_set():
                     aDict = parserFunction(execute_commands(ps,commandList))
-                    #print(aDict)
                     queueToUpdate.put(aDict)
                     time.sleep(fetchInterval)
             if not threadsRunning.is_set(): break
         ps.logout()
     except KeyboardInterrupt:
-        print('\nSSH pull interrupted, quitting')
+        log.info('SSH pull interrupted, quitting')
         ps.logout()
 
 
@@ -125,17 +118,21 @@ def update_with_call_load():
     sshHandle = pxssh.pxssh()
     with open('config.json', 'r') as conF: 
         creds = json.loads(conF.read())['ssh_call_info']
-    if sshHandle.login(creds['ip'], creds['username'], creds['password']):
-        while threadsRunning.is_set():
-            sshHandle.sendline(creds['command_to_send'])
-            sshHandle.prompt()
-            tempLines = sshHandle.before.decode('utf-8').splitlines()[-1]
-            tempCallLoadDict = json.loads(tempLines) if tempLines is not None else {}
-            for aVm in tempCallLoadDict:
-                if aVm not in callLoadDict: callLoadDict[aVm] = {}                    
-                callLoadDict[aVm]['calls'] = tempCallLoadDict[aVm]
-            time.sleep(fetchInterval)
-        sshHandle.logout()
+    try:
+        if sshHandle.login(creds['ip'], creds['username'], creds['password']):
+            while threadsRunning.is_set():
+                sshHandle.sendline(creds['command_to_send'])
+                sshHandle.prompt()
+                tempLines = sshHandle.before.decode('utf-8').splitlines()[-1]
+                tempCallLoadDict = json.loads(tempLines) if tempLines is not None else {}
+                for aVm in tempCallLoadDict:
+                    if aVm not in callLoadDict: callLoadDict[aVm] = {}                    
+                    callLoadDict[aVm]['calls'] = tempCallLoadDict[aVm]
+                time.sleep(fetchInterval)
+            sshHandle.logout()
+    except IndexError:
+        log.error('"IndexError" while updating with call info. Porbable cause : Error in communication with %s' %(creds['ip']))
+        return
 
 
 def update_with_oneoff_command(commandList, dictToUpdate, sshInfo=SSHCreds):
@@ -178,7 +175,7 @@ def button_action_reboot(hostName):
         child.sendline('echo "nova host-action --action reboot '+hostName+'">tempRebootCommand')
         child.sendline('exit')
     except TIMEOUT:
-        print('Failed to execute reboot action on '+hostName)
+        log.error('Failed to execute reboot action on %s' %(hostName))
         return
 
 
@@ -189,8 +186,31 @@ def button_action_scale(scriptPath, actionType):
     ps.logout()
 
 
+def killThreads(tl):
+    for aThread in tl:
+        aThread._tstate_lock = None
+        aThread._stop()
+
+
+class ThreadInterruptable(Thread):
+    def join(self, timeout=0.1):
+        try:            
+            super(ThreadInterruptable, self).join(timeout)
+        except KeyboardInterrupt:
+            log.info('Force-stopping thread %r' %(self.name))
+            try:
+                self._tstate_lock = None
+                self._stop()
+                threadsRunning.clear()
+                global allThreads
+                killThreads(allThreads)
+                log.info('Killing all threads to exit program.')
+            except AssertionError:
+                log.warning('Ignored AssertionError in parent class.')
+
+
 class GUIHandler(BaseHTTPRequestHandler):
-    '''Small class to define HTTP handler of the front end of the GUI'''
+    '''class to define HTTP handler of the front end of the GUI'''
     error_message_format = '<h1>404: File not found </h1>'
     
     def do_GET(self):
@@ -204,8 +224,8 @@ class GUIHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
-                global GUI_dict                
-                print(json.dumps(GUI_dict))
+                global GUI_dict
+                log.debug(json.dumps(GUI_dict))
                 self.wfile.write(bytes(json.dumps(GUI_dict), 'UTF-8'))
                 return
             elif os.path.isfile(root_dir + self.path):
@@ -218,12 +238,15 @@ class GUIHandler(BaseHTTPRequestHandler):
                 return
             elif len(self.path.split('reboot--'))>1:
                 Thread(target=button_action_reboot, args=(self.path.split('reboot--')[1],)).start()
+                log.debug('Got command to reboot %r' %(self.path.split('reboot--')[1]))
                 return
             elif len(self.path.split('actionScaleIn'))>1:
                 Thread(target=button_action_scale, args=(scaleAction['scriptpath'],'in')).start()
+                log.debug('Got command to scale-in')
                 return
             elif len(self.path.split('actionScaleOut'))>1:
                 Thread(target=button_action_scale, args=(scaleAction['scriptpath'],'out')).start()
+                log.debug('Got command to scale-out')
                 return
             else:
                 self.send_response(404, 'File not found')
@@ -232,21 +255,16 @@ class GUIHandler(BaseHTTPRequestHandler):
                 self.wfile.write(bytes('File not found', 'UTF-8'))
                 return
         except BrokenPipeError:
-            print('Failed to complete request')
+            log.error('Failed to complete request in "do_GET"')
         except KeyboardInterrupt:
-            print('KeyboardInterrupt received, quitting.') 
+            log.info('KeyboardInterrupt received, quitting.') 
             return
     
     def log_message(self, format, *args):
         return
 
 
-
-
-
-
-
-if __name__ == '__main__':
+if __name__ == '__main__':   
     qwrs_2 = {'vmUnavailable':\
                 {'regexes':\
                     {'matcher':r'VM Unavailable;',\
@@ -259,32 +277,42 @@ if __name__ == '__main__':
                 'valueQ': Queue()\
                 }\
             }
+    log = logging.getLogger('GUIserver')
+    if argv[1:]:
+        log.setLevel(LOG_LEVELS.get(argv[1], logging.NOTSET))        
+    else:
+        log.setLevel(logging.INFO)
+    fh = logging.FileHandler('gui_events.log')    
+    sh = logging.StreamHandler()
+    sh.setLevel(LOG_LEVELS.get(argv[1]) if argv[1:] else logging.INFO)
+    fh.setLevel(logging.DEBUG)
+    logFormatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(logFormatter)
+    sh.setFormatter(logFormatter)
+    log.addHandler(fh)
+    log.addHandler(sh)
     #setConfigIPToActiveCIC()
-    print('alert: "setConfigIPToActiveCIC" is disabled')
+    log.warning('"setConfigIPToActiveCIC" is disabled')
     load_config()
-    mlp = mainLogLiveParser(threadsRunning)
+    mlp = mainLogLiveParser(threadsRunning, logger=log)
     threadsRunning.set()    
     GUIserver = HTTPServer((GUIIP, GUIPort), GUIHandler)
-    GUIserverThread = Thread(target=GUIserver.serve_forever, name="GUIserverThread")
+    GUIserverThread = ThreadInterruptable(target=GUIserver.serve_forever, name="GUIserverThread")
     #serviceListPullThread = Thread(target = update_with_commands, args=(['cat /home/mk/Documents/CM_HA_Demo/dummy_inputs/service_list.txt'], node_dicts, service_list_to_dict, localSSHCreds))
-    serviceListPullThread = Thread(target = update_with_commands, args=(['nova service-list'], node_dicts, service_list_to_dict), name='serviceListPullThread')    
-    dictMergerThread = Thread(target=dictMerger, args=(5, fetchInterval), name="dictMergerThread")
-    callLoadGetterThread = Thread(target=update_with_call_load, name="callLoadGetterThread")
-    appPutterThread = Thread(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha/main.log | grep -v DEBUG'], qwrs_2), name="appPutterThread")
-    appGetterThread = Thread(target=mlp.startMappingEventsLive, args=(qwrs_2,), name="appGetterThread")
+    serviceListPullThread = ThreadInterruptable(target = update_with_commands, args=(['nova service-list'], node_dicts, service_list_to_dict), name='serviceListPullThread')    
+    dictMergerThread = ThreadInterruptable(target=dictMerger, args=(5, fetchInterval), name="dictMergerThread")
+    callLoadGetterThread = ThreadInterruptable(target=update_with_call_load, name="callLoadGetterThread")
+    appPutterThread = ThreadInterruptable(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha/main.log | grep -v DEBUG'], qwrs_2), name="appPutterThread")
+    appGetterThread = ThreadInterruptable(target=mlp.startMappingEventsLive, args=(qwrs_2,), name="appGetterThread")
     allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread]
     try:
-        print('GUI running at %s:%d/index.html' %(GUIIP, GUIPort))
-        for aThread in allThreads: aThread.start()              
+        log.info('GUI running at %s:%d/index.html' %(GUIIP, GUIPort))
+        for aThread in allThreads: aThread.start()
     except KeyboardInterrupt:
-        print("\nStopping GUI server and SSH-pulling.")
+        log.info('Stopping GUI server and SSH-pulling.')
         threadsRunning.clear()
-        node_dicts.join()
-        try:
-            while any([aThread.is_alive() for aThread in allThreads]):
-                for aThread in allThreads:
-                    if aThread.is_alive():
-                        aThread.join(0.1)
-        except KeyboardInterrupt:
-            print('Stopping all')
+        for aThread in allThreads: 
+            aThread._stop()
+            #time.sleep(0.3)
+        node_dicts.join()      
         sys.exit()

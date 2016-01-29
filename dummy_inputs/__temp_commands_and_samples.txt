@@ -20,3 +20,35 @@ _event_time: None; sync_url: None, 'http://192.168.2.20:8997/resend_alarms'), kw
 <134>Jan 21 22:09:58 cic-0-1 cmha: db INFO Adding is_stateful: True; source: Region=POD14-HP,CeeFunction=1,Tenant=b6ec0a4161884d82965d1bd70105a9e1,VM=e621e398-4734-4727-a90c-3d172b7c50b3; major_type: 193; minor_type: 2031702; active_severity: 1; event_type: 1; probable_cause: 165; specific_problem: VM Unavailable; additional_info: None; additional_text: {"host": "compute-0-8"}: dropping it together with yet unsent original event
 
 re.findall(r'(?<=active_severity\:)(\s+\d)', ss)
+
+2016-01-29 20:07:13 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-11.domain.tld, started 139863965808384)> missed 1 beats
+2016-01-29 20:07:13 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:14 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:14 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:17 cmha: Fuel:RegionOne:192.168.0.11 ERROR can update uptime: Command '('timeout', '9', 'ssh', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no', '192.168.0.11', '--', 'cat /proc/uptime')' returned non-zero exit status 255
+2016-01-29 20:07:18 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:18 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-8.domain.tld, started 139863982593792)> missed 1 beats
+2016-01-29 20:07:18 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:19 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:19 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:19 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:21 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-11.domain.tld, started 139863965808384)> missed 1 beats
+2016-01-29 20:07:22 cmha: Fuel:RegionOne:192.168.0.11 ERROR can update uptime: Command '('timeout', '9', 'ssh', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no', '192.168.0.11', '--', 'cat /proc/uptime')' returned non-zero exit status 255
+2016-01-29 20:07:23 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:24 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:24 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:28 cmha: Fuel:RegionOne:192.168.0.11 ERROR can update uptime: Command '('timeout', '9', 'ssh', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no', '192.168.0.11', '--', 'cat /proc/uptime')' returned non-zero exit status 255
+2016-01-29 20:07:29 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:30 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:30 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-12.domain.tld, started 139864482752256)> missed 1 beats
+2016-01-29 20:07:32 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-5.domain.tld, started 139864517109504)> missed 1 beats
+2016-01-29 20:07:32 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-11.domain.tld, started 139863965808384)> missed 1 beats
+2016-01-29 20:07:32 cmha: cmha.openstack.monitors INFO <NovaMonitor(Thread-1, started 139864536868608)> missed 1 beats
+2016-01-29 20:07:32 cmha: cmha.actors.computeactor INFO <ComputeActor(compute-actor-compute-0-6.domain.tld, started 139863974201088)> missed 1 beats
+2016-01-29 20:07:33 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:33 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:33 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:33 cmha: Fuel:RegionOne:192.168.0.11 ERROR can update uptime: Command '('timeout', '9', 'ssh', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no', '192.168.0.11', '--', 'cat /proc/uptime')' returned non-zero exit status 255
+2016-01-29 20:07:34 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:34 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local
+2016-01-29 20:07:34 cmha: urllib3.connectionpool INFO Starting new HTTPS connection (1): public.fuel.local

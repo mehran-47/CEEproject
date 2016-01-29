@@ -13,6 +13,8 @@ var xhrErrorCount = 0;
 var loadBarRefNum = 5;
 var intervalExec;
 var latestEventString = "";
+var nodesWidthOffset = 80;
+var vmsHeightOffset = 4.75;
 
 window.onload = function(){
     getAndExecute("gui_config.json", setLinkAndParseHTML);    
@@ -28,6 +30,7 @@ function setLinkAndParseHTML(text, parserFunction){
     intervalExec = setInterval(getAndExecuteWrapper, 3000);
     document.getElementById('scale_out').onclick = scaleOut;
     document.getElementById('scale_in').onclick = scaleIn;
+    document.getElementById('referenceNumber').onblur = setCallReferenceNumber
 }
 
 function loadViewSpecs(text){
@@ -147,9 +150,9 @@ function JSONToHTML(text){
         }
         nodesContainer.appendChild(nodes[i]);
         //setDemoCases();
-        setVmHeights(4.9); 
+        setVmHeights(vmsHeightOffset); 
     }
-   setNodeWidth(nodes.length, 80);
+   setNodeWidth(nodes.length, nodesWidthOffset);
 }
 
 function createDOMElement(elementType, HTMLstring, cssClass, elementId){
@@ -188,6 +191,10 @@ function setVmHeights(offset){
         var vms = allNodes[i].getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase');
         for(var j=0; j<vms.length; j++){
             vms[j].style.height = (100-offset*vms.length)/vms.length + '%';
+            var loadBars = vms[j].getElementsByClassName('eaCEEGUI-raNode-raAppsContainer-loadBar')
+            for(var k=0; k<loadBars.length; k++){
+                loadBars[k].style.height = 87-13*(vms.length-1) + '%';
+            }
         }
     }
 }
@@ -230,4 +237,8 @@ function scaleOut(){
 function scaleIn(){
     latestEventString = 'scaling in';
     getAndExecute(parsedConfig.ajaxlink+'/actionScaleIn', showInEvent);
+}
+
+function setCallReferenceNumber(){
+    loadBarRefNum=document.getElementById('referenceNumber').value;
 }

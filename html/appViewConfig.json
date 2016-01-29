@@ -1,9 +1,49 @@
 {
-    "IPW-PL3":{
+    "Backendv-1":{
         "isDemoCase":false,
         "visibility":true
     },
+    "Backendv-2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "CSCF-PL-3":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "CSCF-PL-4":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "CSCF-SC-1":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "CSCF-SC-2":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-PL-3":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-PL-4":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-PL3":{
+        "isDemoCase":true,
+        "visibility":true
+    },
     "IPW-PL4":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-SC-1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPW-SC-2":{
         "isDemoCase":false,
         "visibility":true
     },
@@ -15,12 +55,16 @@
         "isDemoCase":false,
         "visibility":true
     },
-    "MTAS-15B-PL-3":{
+    "MRSv":{
         "isDemoCase":false,
         "visibility":true
     },
+    "MTAS-15B-PL-3":{
+        "isDemoCase":true,
+        "visibility":true
+    },
     "MTAS-15B-PL-4":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "MTAS-15B-SC-1":{
@@ -32,11 +76,11 @@
         "visibility":true
     },
     "SBG-PL-3":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "SBG-PL-4":{
-        "isDemoCase":false,
+        "isDemoCase":true,
         "visibility":true
     },
     "SBG-SC-1":{

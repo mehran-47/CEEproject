@@ -97,10 +97,11 @@ function JSONToHTML(text){
             for(var anApp in data[nodes[i].id]['applications']){
                 if(appViewConfig[anApp]['visibility']){
                     var cssClassToAdd = appViewConfig[anApp]['isDemoCase'] ? 'eaCEEGUI-raNode-raApp-innerContainerDemoCase' : 'eaCEEGUI-raNode-raApp-innerContainer';
+                    var callDiv = data[nodes[i].id]['applications'][anApp]['calls']!=undefined ? '<div style="font-size:0.8em">Calls : '+data[nodes[i].id]['applications'][anApp]['calls']+'</div>':'';
                     createDOMElementAndAdd(
                         'div', 
                         appsContainer, 
-                        '<div class=" '+ cssClassToAdd+'">' + anApp + '</div>', 
+                        '<div class=" '+ cssClassToAdd+'"><div>' + anApp + '</div>'+callDiv+'</div>', 
                         'eaCEEGUI-raNode-raApp', 
                         anApp+'-'+nodes[i].id);
                 }

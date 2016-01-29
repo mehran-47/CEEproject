@@ -15,7 +15,7 @@
         "ip":"10.118.42.146",
         "username":"root",
         "password":"rootroot",
-        "command_to_send":"/cluster/home/getCalls.sh ExtNetSelPoolEntryGuiPot \"3 4\""
+        "command_to_send":"/cluster/home/getCalls.sh ExtNetSelPoolEntryGuiPot \"3 4 5 6\""
     },
     "scale_action":{
         "ip":"10.118.37.52",

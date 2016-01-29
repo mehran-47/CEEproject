@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 from pexpect import pxssh, spawn, TIMEOUT
 from queue import Queue
-import time, re, sys, os
+import time, re, sys, os, logging
 from sshfetch import *
 from threading import Thread, Event
 
+class ThreadInterruptable(Thread):
+    def join(self, timeout=0.1):
+        try:            
+            super(ThreadInterruptable, self).join(timeout)
+        except KeyboardInterrupt:
+            try:
+                logging.info('Force-stopping thread %r' %(self.name))
+                self._tstate_lock = None
+                self._stop()
+            except AssertionError:
+                logging.warning('Ignored AssertionError in parent class')
+
 class mainLogLiveParser():
-    def __init__(self, shouldRun):
+    def __init__(self, shouldRun, logger=logging):
         self.credDict = {}
         with open('config.json', 'r') as conF:
             self.credDict = json.loads(conF.read())['ssh']
@@ -19,8 +31,10 @@ class mainLogLiveParser():
         self.appDictForGui = {}
         self.updateApps = False
         self.vmIdToNameMapUpdated = False
-        self.vmIdToNameMapUpdaterThread = Thread(target=self.__updateVmIdToNameMap, name="private__updateVmIdToNameMapThread")
-        self.vmIdToNameMapUpdaterThread.start()
+        self.log = logger
+        #logging.basicConfig(level=logLevel, format='%(asctime)s: %(message)s')
+        self.vmIdToNameMapUpdaterThread = ThreadInterruptable(target=self.__updateVmIdToNameMap, name="private__updateVmIdToNameMapThread")
+        self.vmIdToNameMapUpdaterThread.start()        
     
     def updateAppDictForGui(self):
         toRet = {}
@@ -55,25 +69,25 @@ class mainLogLiveParser():
             child = spawn('ssh '+self.user+'@'+self.ip)
             child.expect(self.user+"@"+self.ip+"'s password:")
             child.sendline(self.pw)
-            print('Successfully logged in on', self.ip)
+            self.log.info('Successfully logged in on %s', self.ip)
             for line in commList:
                 child.sendline(line)
             for line in child:
                 if not self.shouldRun.is_set():
                     child.sendline('^C')
                     child.sendline('exit')
-                    print('\nQuitting...')
+                    self.log.info('Quitting...')
                     return
                 for qwr in qsWithRegexes:
                     decodedLine = line.decode('utf-8')
                     compiledRegexMatcher = re.compile(qsWithRegexes[qwr]['regexes']['matcher'])
                     if compiledRegexMatcher.search(decodedLine) is not None:
-                        print('\n\n', 'Found a match, processing:\n', decodedLine, '\n\n')
+                        self.log.info('Found a match while parsing main log, processing:\n%s' %(decodedLine))
                         toPut = {}
                         for rgf in qsWithRegexes[qwr]['regexes']['finder']:
                             #rgf pattern: [regex_to_extract_initial_data, function_to_process_found_data, string_specifying_the_type_of_data_extracted]
                             foundFragments = re.findall(rgf[0], decodedLine)
-                            print('foundFragments: ', foundFragments)
+                            self.log.info('foundFragments: %r' %(foundFragments))
                             toPut[rgf[2]] = [rgf[1](aFragment) for aFragment in foundFragments][-1] if len(foundFragments)>0 else None
                         toPut['origin'] = qwr
                         qsWithRegexes[qwr]['valueQ'].put(toPut)                                
@@ -83,13 +97,12 @@ class mainLogLiveParser():
             child.sendline('exit')
             return
         except TIMEOUT:
-            print('-----------Error reading the main cmha.log file----------')
+            self.log.critical('SSH connection timeout, can\'t read "main.log" or "cmha.log" file')
             raise
             return 
 
     def startMappingEventsLive(self, qsWithRegexes):
         anEvent = {}
-        #print('is shouldRun set:', self.shouldRun.is_set())
         try:
             while self.shouldRun.is_set():
                 while not qsWithRegexes['vmUnavailable']['valueQ'].empty():
@@ -110,8 +123,8 @@ class mainLogLiveParser():
                         if anEvent['vm'] in self.eventsMap:
                             del  self.eventsMap[anEvent['vm']]                   
                     qsWithRegexes['vmUnavailable']['valueQ'].task_done()
-                    print('\n-------got from Q------', anEvent, '-------------\n')
-                    print('\n-------Current Events\' Map------', self.eventsMap, '-------------\n')
+                    self.log.info('-------got from Q------%r-------------', anEvent)
+                    self.log.info('-------Current Events\' Map------%r-------------', self.eventsMap)
                 time.sleep(2)
         except KeyboardInterrupt:
             self.shouldRun.clear()            
@@ -119,7 +132,7 @@ class mainLogLiveParser():
                 qsWithRegexes[qwr]['valueQ'].join()
 
 def fixJson(string):
-    print(string)
+    self.log.debug(string)
     return json.loads(re.sub('u\'|\'','"', '{'+string+'}'))
 
 
@@ -154,8 +167,8 @@ if __name__ == '__main__':
             }
     try:
         allThreads = []
-        allThreads += [Thread(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha.log | grep -v DEBUG'], qwrs_2))]
-        allThreads += [Thread(target=mlp.startMappingEventsLive, args=(qwrs_2,))]
+        allThreads += [ThreadInterruptable(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha.log | grep -v DEBUG'], qwrs_2))]
+        allThreads += [ThreadInterruptable(target=mlp.startMappingEventsLive, args=(qwrs_2,))]
         shouldRun.set()
         for aThread in allThreads: aThread.start()
     except KeyboardInterrupt:
