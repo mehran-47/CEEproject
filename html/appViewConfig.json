@@ -75,6 +75,22 @@
         "isDemoCase":true,
         "visibility":true
     },
+    "MTAS-PL3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-PL4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
     "SBG-PL-3":{
         "isDemoCase":true,
         "visibility":true
@@ -89,6 +105,10 @@
     },
     "SBG-SC-2":{
         "isDemoCase":true,
+        "visibility":true
+    },
+    "TESt12":{
+        "isDemoCase":false,
         "visibility":true
     },
     "cs-atlas2":{

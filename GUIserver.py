@@ -35,13 +35,16 @@ def setConfigIPToActiveCIC():
         configDict = json.loads(conF.read())
         ip, user, pw = configDict['ssh']['ip'], configDict['ssh']['username'], configDict['ssh']['password']
     if ps.login(ip, user, pw):
-        current_cic_hostname = "".join(execute_commands(ps, ['hostname -s'])[-1].split())
+        current_cic_hostname = "".join(execute_commands(ps, ['hostname -s'])[-1].split())+'.domain.tld'
         main_cic_hostname = execute_commands(ps, ['echo $(sudo crm_mon -1 | grep cmha| grep Started)'])[0].rsplit('Started')[-1]
         main_cic_hostname = "".join(main_cic_hostname.split())
-        log.info('Main cic hostname: %s.' %(main_cic_hostname))
+        log.info('Main cic hostname: "%s"' %(main_cic_hostname))
+        log.debug('Current cic hostname: "%s"' %(current_cic_hostname))
         if current_cic_hostname!=main_cic_hostname:
             log.info('Currently set IP in the \'config.json\' file does not belong to the main CIC, fetching main cic IP for GUI-config file. This might take upto 1 minute.')            
-            main_cic_ip_string = execute_commands(ps, ['ssh '+user+'@'+main_cic_hostname, 'echo $(ifconfig br-ex | grep "inet addr:")', 'exit'])[-3]
+            main_cic_ip_string = execute_commands(ps, ['ssh '+user+'@'+main_cic_hostname, pw ,'echo $(ifconfig br-ex | grep "inet addr:")'])[-2]
+            log.debug('main cic ip string %s' %(main_cic_ip_string))
+            execute_commands(ps, ['exit'])
             main_cic_ip_string = ["".join(s.split()) for s in re.findall(r'(?<=inet addr:)(.+)(?=Bcast)', main_cic_ip_string)][0]
             log.info('Main cic IP: %s' %(main_cic_ip_string))
             configDict['ssh']['ip'] = main_cic_ip_string
@@ -197,7 +200,7 @@ class ThreadInterruptable(Thread):
         try:            
             super(ThreadInterruptable, self).join(timeout)
         except KeyboardInterrupt:
-            log.info('Force-stopping thread %r' %(self.name))
+            log.info('Stopping thread %r' %(self.name))
             try:
                 self._tstate_lock = None
                 self._stop()
@@ -271,7 +274,8 @@ if __name__ == '__main__':
                     'finder':[ \
                                 [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
                                 [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
-                                [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'] \
+                                [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
+                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x[-1], "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
                             ] \
                     },\
                 'valueQ': Queue()\
@@ -291,8 +295,8 @@ if __name__ == '__main__':
     sh.setFormatter(logFormatter)
     log.addHandler(fh)
     log.addHandler(sh)
-    #setConfigIPToActiveCIC()
-    log.warning('"setConfigIPToActiveCIC" is disabled')
+    setConfigIPToActiveCIC()
+    #log.warning('"setConfigIPToActiveCIC" is disabled')
     load_config()
     mlp = mainLogLiveParser(threadsRunning, logger=log)
     threadsRunning.set()    
