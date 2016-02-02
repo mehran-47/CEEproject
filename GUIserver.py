@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import mimetypes, os, json, time, sys, copy, logging
+import mimetypes, os, json, time, sys, copy, logging, datetime 
 from threading import Thread, Event
 from queue import Queue, Empty as QEmpty
 from sys import argv
@@ -24,7 +24,7 @@ allThreads = []
 threadsRunning = Event()
 upNodeCount = 0
 root_dir = os.getcwd() + '/html/'
-localSSHCreds = {'ip':'192.168.0.1', 'user':'mk', 'pw':'UIw0rk'}
+#localSSHCreds = {'ip':'192.168.0.1', 'user':'mk', 'pw':'UIw0rk'}
 SSHCreds = {'ip':'', 'user':'', 'pw':''}
 SSHIP, SSHUser, SSHPw, fetchInterval, SSHConnectAttempts, GUIIP, GUIPort = None, None, None, None, None, None, None
 
@@ -49,7 +49,7 @@ def setConfigIPToActiveCIC():
             log.info('Main cic IP: %s' %(main_cic_ip_string))
             configDict['ssh']['ip'] = main_cic_ip_string
             with open('config.json', 'w') as conF:
-                conF.write(json.dumps(configDict, indent=4, separators=(',', ':')))
+                conF.write(json.dumps(configDict, indent=4, separators=(',', ':'), sort_keys=True))
         else:
             log.info("Config file has the main CIC IP.")
             ps.logout()
@@ -116,18 +116,21 @@ def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSH
         ps.logout()
 
 
-def update_with_call_load():
+def __update_with_call_load(appName, creds):
     global callLoadDict
-    sshHandle = pxssh.pxssh()
-    with open('config.json', 'r') as conF: 
-        creds = json.loads(conF.read())['ssh_call_info']
+    sshHandle = pxssh.pxssh()   
     try:
         if sshHandle.login(creds['ip'], creds['username'], creds['password']):
             while threadsRunning.is_set():
                 sshHandle.sendline(creds['command_to_send'])
                 sshHandle.prompt()
                 tempLines = sshHandle.before.decode('utf-8').splitlines()[-1]
-                tempCallLoadDict = json.loads(tempLines) if tempLines is not None else {}
+                try:
+                    tempCallLoadDict = json.loads(tempLines) if tempLines is not None else {}
+                except ValueError:
+                    log.error("Invalid call info received, setting call info to 'None' for this dictionary")
+                    tempCallLoadDict = {}
+                tempCallLoadDict = {appName+'-'+k:v for k, v in tempCallLoadDict.items()}
                 for aVm in tempCallLoadDict:
                     if aVm not in callLoadDict: callLoadDict[aVm] = {}                    
                     callLoadDict[aVm]['calls'] = tempCallLoadDict[aVm]
@@ -136,6 +139,15 @@ def update_with_call_load():
     except IndexError:
         log.error('"IndexError" while updating with call info. Porbable cause : Error in communication with %s' %(creds['ip']))
         return
+
+
+def update_with_call_load():
+    global callLoadDict
+    callCreds = {}
+    with open('config.json', 'r') as conF: 
+        callCreds = json.loads(conF.read())['ssh_call_info']
+    for anApp in callCreds:
+        ThreadInterruptable(target=__update_with_call_load, args=(anApp, callCreds[anApp]), name='call_load_updater_thread__'+ anApp).start()
 
 
 def update_with_oneoff_command(commandList, dictToUpdate, sshInfo=SSHCreds):
@@ -175,7 +187,8 @@ def button_action_reboot(hostName):
         child = spawn('ssh '+SSHUser+'@'+SSHIP)
         child.expect(SSHUser+"@"+SSHIP+"'s password:")
         child.sendline(SSHPw)
-        child.sendline('echo "nova host-action --action reboot '+hostName+'">tempRebootCommand')
+        #child.sendline('echo "nova host-action --action reboot '+hostName+'">tempRebootCommand')
+        child.sendline('ssh '+hostName+' reboot')        
         child.sendline('exit')
     except TIMEOUT:
         log.error('Failed to execute reboot action on %s' %(hostName))
@@ -207,7 +220,7 @@ class ThreadInterruptable(Thread):
                 threadsRunning.clear()
                 global allThreads
                 killThreads(allThreads)
-                log.info('Killing all threads to exit program.')
+                log.info('Stopping all threads to exit program.')
             except AssertionError:
                 log.warning('Ignored AssertionError in parent (threading.Thread) class.')
 
@@ -310,7 +323,7 @@ if __name__ == '__main__':
     appGetterThread = ThreadInterruptable(target=mlp.startMappingEventsLive, args=(qwrs_2,), name="appGetterThread")
     allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread]
     try:
-        log.info('GUI running at %s:%d/index.html' %(GUIIP, GUIPort))
+        log.info('GUI running at %s:%d' %(GUIIP, GUIPort))
         for aThread in allThreads: aThread.start()
     except KeyboardInterrupt:
         log.info('Stopping GUI server and SSH-pulling.')

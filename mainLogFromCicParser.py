@@ -3,7 +3,7 @@ from pexpect import pxssh, spawn, TIMEOUT
 from queue import Queue
 import time, re, sys, os, logging, datetime
 from sshfetch import *
-from threading import Thread, Event
+from threading import Thread, Event, current_thread
 
 class ThreadInterruptable(Thread):
     def join(self, timeout=0.1):
@@ -11,7 +11,7 @@ class ThreadInterruptable(Thread):
             super(ThreadInterruptable, self).join(timeout)
         except KeyboardInterrupt:
             try:
-                logging.info('Force-stopping thread %r' %(self.name))
+                logging.info('Stopping thread %r' %(self.name))
                 self._tstate_lock = None
                 self._stop()
             except AssertionError:
@@ -76,7 +76,7 @@ class mainLogLiveParser():
                 if not self.shouldRun.is_set():
                     child.sendline('^C')
                     child.sendline('exit')
-                    self.log.info('Quitting...')
+                    self.log.info('Stopping thread "%s"' %(current_thread().name))
                     return
                 for qwr in qsWithRegexes:
                     decodedLine = line.decode('utf-8')

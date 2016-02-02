@@ -10,7 +10,7 @@ var appViewConfig = {};
 var domNodeHeight = 200;
 var domDemoCaseVMExtraPadding = 40;
 var xhrErrorCount = 0;
-var loadBarRefNum = 5;
+var loadBarRefNum = 200;
 var intervalExec;
 var latestEventString = "";
 var nodesWidthOffset = 80;
@@ -118,8 +118,8 @@ function JSONToHTML(text){
                             'callSpace-'+numAppWithCalls+'-'+anApp+'-'+nodes[i].id);
                         var loadBar = createDOMElement(
                             'div',
-                            '<div class="ebBgColor_purple" style="height: '+ data[nodes[i].id]['applications'][anApp]['calls']*100/loadBarRefNum +'%; border-radius: 5px 5px 0px 0px;">',
-                            'ebBgColor_purple_40 eaCEEGUI-raNode-raAppsContainer-loadBar',
+                            '<div class="ebBgColor_darkGreen" style="height: '+ data[nodes[i].id]['applications'][anApp]['calls']*100/loadBarRefNum +'%; border-radius: 5px 5px 0px 0px;">',
+                            'ebBgColor_darkGreen_40 eaCEEGUI-raNode-raAppsContainer-loadBar',
                             'load-bar-'+i+'-'+numAppWithCalls);
                         aVm.appendChild(vmInnerElements);
                         createDOMElementAndAdd('div', aVm, '', 'clearfix','');

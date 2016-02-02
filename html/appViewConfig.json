@@ -15,6 +15,10 @@
         "isDemoCase":true,
         "visibility":true
     },
+    "CSCF-PL-5":{
+        "isDemoCase":true,
+        "visibility":true
+    },
     "CSCF-SC-1":{
         "isDemoCase":true,
         "visibility":true
@@ -24,35 +28,35 @@
         "visibility":true
     },
     "IPW-PL-3":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-PL-4":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-PL3":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-PL4":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-SC-1":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-SC-2":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-SC1":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-SC2":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "MRSv":{
@@ -60,19 +64,23 @@
         "visibility":true
     },
     "MTAS-15B-PL-3":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "MTAS-15B-PL-4":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "MTAS-15B-SC-1":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "MTAS-15B-SC-2":{
-        "isDemoCase":true,
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-PL-4":{
+        "isDemoCase":false,
         "visibility":true
     },
     "MTAS-PL3":{
@@ -92,19 +100,19 @@
         "visibility":true
     },
     "SBG-PL-3":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "SBG-PL-4":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "SBG-SC-1":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "SBG-SC-2":{
-        "isDemoCase":true,
+        "isDemoCase":false,
         "visibility":true
     },
     "TESt12":{
