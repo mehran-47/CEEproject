@@ -5,10 +5,10 @@
         "port":8080
     },
     "scale_action":{
-        "ip":"10.118.37.52",
-        "pw":"qwqwqw",
-        "scriptpath":"/home/atlasadm/CSCF_SCALE.sh",
-        "user":"atlasadm"
+        "ip":"10.118.37.38",
+        "pw":"r00tme",
+        "scriptpath":"/root/CSCF_PL_SCALE.sh",
+        "user":"root"
     },
     "ssh":{
         "connectattempts":3,

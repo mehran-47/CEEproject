@@ -37,7 +37,7 @@ def app_list_to_dict(outputList):
             
 
 def setConfigIPToActiveCIC_1():
-    ps, ps1 = (pxssh.pxssh(),)*2 
+    ps, ps1 = (pxssh.pxssh(options={"StrictHostKeyChecking": "no"}),)*2 
     with open('config.json', 'r') as conF:
         configDict = json.loads(conF.read())
         ip, cic_ips, user, pw = configDict['ssh']['ip'], configDict['ssh']['cic_ips'] ,configDict['ssh']['username'], configDict['ssh']['password']
@@ -64,7 +64,7 @@ def updateWithCallLoadInfo(sshHandle):
 
 if __name__=='__main__':
     p = pprint.PrettyPrinter()
-    ps = pxssh.pxssh()
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
     print(getCallLoadInfo(ps))
     ps.logout()
     #setConfigIPToActiveCIC()

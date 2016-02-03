@@ -79,6 +79,10 @@
         "isDemoCase":false,
         "visibility":true
     },
+    "MTAS-PL-3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
     "MTAS-PL-4":{
         "isDemoCase":false,
         "visibility":true
@@ -88,6 +92,14 @@
         "visibility":true
     },
     "MTAS-PL4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC-1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC-2":{
         "isDemoCase":false,
         "visibility":true
     },

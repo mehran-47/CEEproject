@@ -39,7 +39,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/mk/Documents/ceeprojSandbox"
+VIRTUAL_ENV="/home/mk/Documents/CM_HA_Demo"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

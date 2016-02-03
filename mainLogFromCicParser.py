@@ -11,7 +11,7 @@ class ThreadInterruptable(Thread):
             super(ThreadInterruptable, self).join(timeout)
         except KeyboardInterrupt:
             try:
-                logging.info('Stopping thread %r' %(self.name))
+                logging.info("Stopping thread '%r'" %(self.name))
                 self._tstate_lock = None
                 self._stop()
             except AssertionError:
@@ -51,7 +51,7 @@ class mainLogLiveParser():
         exportAppListToConfigFile(self.appDictForGui)
 
     def __updateVmIdToNameMap(self):
-        ps = pxssh.pxssh()
+        ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
         if ps.login(self.ip, self.user, self.pw):
             mapList = execute_commands(ps, ['nova list --fields=name,host,metadata'])[3:-1]
             ps.logout()
@@ -76,7 +76,7 @@ class mainLogLiveParser():
                 if not self.shouldRun.is_set():
                     child.sendline('^C')
                     child.sendline('exit')
-                    self.log.info('Stopping thread "%s"' %(current_thread().name))
+                    self.log.info("Stopping thread '%s'" %(current_thread().name))
                     return
                 for qwr in qsWithRegexes:
                     decodedLine = line.decode('utf-8')

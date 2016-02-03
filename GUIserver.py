@@ -5,7 +5,7 @@ from queue import Queue, Empty as QEmpty
 from sys import argv
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from sshfetch import *
-from pexpect import pxssh, spawn, TIMEOUT
+from pexpect import pxssh, spawn, TIMEOUT, EOF as pexpectEndOfFile
 from mainLogFromCicParser import mainLogLiveParser
 from multiprocessing import Process as mProcess
 
@@ -30,7 +30,7 @@ SSHIP, SSHUser, SSHPw, fetchInterval, SSHConnectAttempts, GUIIP, GUIPort = None,
 
 
 def setConfigIPToActiveCIC():
-    ps, ps1 = (pxssh.pxssh(),)*2 
+    ps, ps1 = (pxssh.pxssh(options={"StrictHostKeyChecking": "no"}),)*2 
     with open('config.json', 'r') as conF:
         configDict = json.loads(conF.read())
         ip, user, pw = configDict['ssh']['ip'], configDict['ssh']['username'], configDict['ssh']['password']
@@ -100,7 +100,7 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
 
 
 def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSHCreds):
-    ps = pxssh.pxssh()
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
     global threadsRunning
     try:
         for i in range(1, SSHConnectAttempts):
@@ -112,13 +112,13 @@ def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSH
             if not threadsRunning.is_set(): break
         ps.logout()
     except KeyboardInterrupt:
-        log.info('SSH pull interrupted, quitting')
+        log.info('SSH pull interrupted, stopped checking node/blade availability.')
         ps.logout()
 
 
 def __update_with_call_load(appName, creds):
     global callLoadDict
-    sshHandle = pxssh.pxssh()   
+    sshHandle = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})   
     try:
         if sshHandle.login(creds['ip'], creds['username'], creds['password']):
             while threadsRunning.is_set():
@@ -128,7 +128,7 @@ def __update_with_call_load(appName, creds):
                 try:
                     tempCallLoadDict = json.loads(tempLines) if tempLines is not None else {}
                 except ValueError:
-                    log.error("Invalid call info received, setting call info to 'None' for this dictionary")
+                    log.error("Invalid call info received, error in output of %s:%s" %(creds['ip'], creds['command_to_send']))
                     tempCallLoadDict = {}
                 tempCallLoadDict = {appName+'-'+k:v for k, v in tempCallLoadDict.items()}
                 for aVm in tempCallLoadDict:
@@ -139,6 +139,8 @@ def __update_with_call_load(appName, creds):
     except IndexError:
         log.error('"IndexError" while updating with call info. Porbable cause : Error in communication with %s' %(creds['ip']))
         return
+    except pexpectEndOfFile:
+        log.critical('pexpect: end-of-file exception; Failed to read call information. Failed to log in to %s. Running GUI without call-info. Restart program if necessary.' %(creds['ip']))
 
 
 def update_with_call_load():
@@ -147,7 +149,9 @@ def update_with_call_load():
     with open('config.json', 'r') as conF: 
         callCreds = json.loads(conF.read())['ssh_call_info']
     for anApp in callCreds:
-        ThreadInterruptable(target=__update_with_call_load, args=(anApp, callCreds[anApp]), name='call_load_updater_thread__'+ anApp).start()
+        updateWithCallLoadPrivateThread = ThreadInterruptable(target=__update_with_call_load, args=(anApp, callCreds[anApp]), name='call_load_updater_thread__'+ anApp)
+        if not updateWithCallLoadPrivateThread.is_alive(): updateWithCallLoadPrivateThread.start()
+        allThreads.append(updateWithCallLoadPrivateThread)
 
 
 def update_with_oneoff_command(commandList, dictToUpdate, sshInfo=SSHCreds):
@@ -181,31 +185,38 @@ def _reset_updateApps():
         updateApps = True
         time.sleep(60)
 
-
+'''
 def button_action_reboot(hostName):
     try:
         child = spawn('ssh '+SSHUser+'@'+SSHIP)
         child.expect(SSHUser+"@"+SSHIP+"'s password:")
         child.sendline(SSHPw)
         #child.sendline('echo "nova host-action --action reboot '+hostName+'">tempRebootCommand')
-        child.sendline('ssh '+hostName+' reboot')        
+        child.sendline('echo "ssh '+hostName.split('.')[0]+' reboot">tr')
+        #child.sendline('ssh '+hostName+' reboot')
         child.sendline('exit')
     except TIMEOUT:
+        log.error('Failed to execute reboot action on %s' %(hostName))
+        return
+'''
+
+def button_action_reboot(hostName):
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
+    try:
+        if ps.login(SSHIP, SSHUser, SSHPw):
+            #execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' "echo "reboot">rbtT"'])
+            execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' reboot'])
+            ps.logout()
+    except pexpectEndOfFile:
         log.error('Failed to execute reboot action on %s' %(hostName))
         return
 
 
 def button_action_scale(scriptPath, actionType):
-    ps = pxssh.pxssh()
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
     if ps.login(scaleAction['ip'], scaleAction['user'], scaleAction['pw']):
         ps.sendline('echo "~/CSCF_SCALE.sh 5 '+actionType+'">~/tempScaleAction')
     ps.logout()
-
-
-def killThreads(tl):
-    for aThread in tl:
-        aThread._tstate_lock = None
-        aThread._stop()
 
 
 class ThreadInterruptable(Thread):
@@ -218,11 +229,17 @@ class ThreadInterruptable(Thread):
                 self._tstate_lock = None
                 self._stop()
                 threadsRunning.clear()
+                #The avalanche effect
                 global allThreads
-                killThreads(allThreads)
+                self.killThreads(allThreads)
                 log.info('Stopping all threads to exit program.')
             except AssertionError:
                 log.warning('Ignored AssertionError in parent (threading.Thread) class.')
+
+    def killThreads(self, tl):
+        for aThread in tl:
+            aThread._tstate_lock = None
+            aThread._stop() 
 
 
 class GUIHandler(BaseHTTPRequestHandler):
@@ -254,15 +271,15 @@ class GUIHandler(BaseHTTPRequestHandler):
                 return
             elif len(self.path.split('reboot--'))>1:
                 Thread(target=button_action_reboot, args=(self.path.split('reboot--')[1],)).start()
-                log.debug('Got command to reboot %r' %(self.path.split('reboot--')[1]))
+                log.info('Got command to reboot %r' %(self.path.split('reboot--')[1]))
                 return
             elif len(self.path.split('actionScaleIn'))>1:
                 Thread(target=button_action_scale, args=(scaleAction['scriptpath'],'in')).start()
-                log.debug('Got command to scale-in')
+                log.info('Got command to scale-in')
                 return
             elif len(self.path.split('actionScaleOut'))>1:
                 Thread(target=button_action_scale, args=(scaleAction['scriptpath'],'out')).start()
-                log.debug('Got command to scale-out')
+                log.info('Got command to scale-out')
                 return
             else:
                 self.send_response(404, 'File not found')
@@ -288,7 +305,7 @@ if __name__ == '__main__':
                                 [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
                                 [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
                                 [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
-                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x[-1], "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
+                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
                             ] \
                     },\
                 'valueQ': Queue()\
@@ -324,7 +341,9 @@ if __name__ == '__main__':
     allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread]
     try:
         log.info('GUI running at %s:%d' %(GUIIP, GUIPort))
-        for aThread in allThreads: aThread.start()
+        for aThread in allThreads: 
+            if not aThread.is_alive():
+                aThread.start()
     except KeyboardInterrupt:
         log.info('Stopping GUI server and SSH-pulling.')
         threadsRunning.clear()
