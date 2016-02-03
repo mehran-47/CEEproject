@@ -82,12 +82,12 @@ class mainLogLiveParser():
                     decodedLine = line.decode('utf-8')
                     compiledRegexMatcher = re.compile(qsWithRegexes[qwr]['regexes']['matcher'])
                     if compiledRegexMatcher.search(decodedLine) is not None:
-                        self.log.info('Found a match while parsing main log, processing:\n%s' %(decodedLine))
+                        self.log.debug('Found a match while parsing main log, processing:\n%s' %(decodedLine))
                         toPut = {}
                         for rgf in qsWithRegexes[qwr]['regexes']['finder']:
                             #rgf pattern: [regex_to_extract_initial_data, function_to_process_found_data, string_specifying_the_type_of_data_extracted]
                             foundFragments = re.findall(rgf[0], decodedLine)
-                            self.log.info('foundFragments: %r' %(foundFragments))
+                            self.log.debug('foundFragments: %r' %(foundFragments))
                             toPut[rgf[2]] = [rgf[1](aFragment) for aFragment in foundFragments][-1] if len(foundFragments)>0 else None
                         toPut['origin'] = qwr
                         qsWithRegexes[qwr]['valueQ'].put(toPut)                                
@@ -124,8 +124,8 @@ class mainLogLiveParser():
                         if anEvent['vm'] in self.eventsMap:
                             del  self.eventsMap[anEvent['vm']]
                     qsWithRegexes['vmUnavailable']['valueQ'].task_done()
-                    self.log.info('-------got from Q------%r-------------', anEvent)
-                    self.log.info('-------Current Events\' Map------%r-------------', self.eventsMap)
+                    self.log.debug('-------got from Q------%r-------------', anEvent)
+                    self.log.debug('-------Current Events\' Map------%r-------------', self.eventsMap)
                 time.sleep(2)
         except KeyboardInterrupt:
             self.shouldRun.clear()            
@@ -161,7 +161,7 @@ if __name__ == '__main__':
                                 [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
                                 [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
                                 [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
-                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x[-1], "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
+                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
                             ] \
                     },\
                 'valueQ': Queue()\

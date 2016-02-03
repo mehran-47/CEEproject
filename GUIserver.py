@@ -24,9 +24,22 @@ allThreads = []
 threadsRunning = Event()
 upNodeCount = 0
 root_dir = os.getcwd() + '/html/'
-#localSSHCreds = {'ip':'192.168.0.1', 'user':'mk', 'pw':'UIw0rk'}
 SSHCreds = {'ip':'', 'user':'', 'pw':''}
 SSHIP, SSHUser, SSHPw, fetchInterval, SSHConnectAttempts, GUIIP, GUIPort = None, None, None, None, None, None, None
+qwrs_2 = {'vmUnavailable':\
+                {'regexes':\
+                    {'matcher':r'VM Unavailable;',\
+                    'finder':[ \
+                                [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
+                                [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
+                                [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
+                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
+                            ] \
+                    },\
+                'valueQ': Queue()\
+                }\
+            }
+extraVerbose = False
 
 
 def setConfigIPToActiveCIC():
@@ -185,20 +198,6 @@ def _reset_updateApps():
         updateApps = True
         time.sleep(60)
 
-'''
-def button_action_reboot(hostName):
-    try:
-        child = spawn('ssh '+SSHUser+'@'+SSHIP)
-        child.expect(SSHUser+"@"+SSHIP+"'s password:")
-        child.sendline(SSHPw)
-        #child.sendline('echo "nova host-action --action reboot '+hostName+'">tempRebootCommand')
-        child.sendline('echo "ssh '+hostName.split('.')[0]+' reboot">tr')
-        #child.sendline('ssh '+hostName+' reboot')
-        child.sendline('exit')
-    except TIMEOUT:
-        log.error('Failed to execute reboot action on %s' %(hostName))
-        return
-'''
 
 def button_action_reboot(hostName):
     ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
@@ -229,7 +228,7 @@ class ThreadInterruptable(Thread):
                 self._tstate_lock = None
                 self._stop()
                 threadsRunning.clear()
-                #The avalanche effect
+                #The avalanche effect: one 'KeyboardInterrupt' to kill them all.
                 global allThreads
                 self.killThreads(allThreads)
                 log.info('Stopping all threads to exit program.')
@@ -258,7 +257,8 @@ class GUIHandler(BaseHTTPRequestHandler):
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
                 global GUI_dict
-                log.debug(json.dumps(GUI_dict))
+                global extraVerbose
+                if extraVerbose: log.debug(json.dumps(GUI_dict))
                 self.wfile.write(bytes(json.dumps(GUI_dict), 'UTF-8'))
                 return
             elif os.path.isfile(root_dir + self.path):
@@ -297,21 +297,10 @@ class GUIHandler(BaseHTTPRequestHandler):
         return
 
 
-if __name__ == '__main__':   
-    qwrs_2 = {'vmUnavailable':\
-                {'regexes':\
-                    {'matcher':r'VM Unavailable;',\
-                    'finder':[ \
-                                [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
-                                [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
-                                [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
-                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
-                            ] \
-                    },\
-                'valueQ': Queue()\
-                }\
-            }
+if __name__ == '__main__':    
     log = logging.getLogger('GUIserver')
+    if argv[2:] and argv[2]=='-v':
+        extraVerbose = True
     if argv[1:]:
         log.setLevel(LOG_LEVELS.get(argv[1], logging.NOTSET))        
     else:
@@ -326,13 +315,11 @@ if __name__ == '__main__':
     log.addHandler(fh)
     log.addHandler(sh)
     setConfigIPToActiveCIC()
-    #log.warning('"setConfigIPToActiveCIC" is disabled')
     load_config()
     mlp = mainLogLiveParser(threadsRunning, logger=log)
     threadsRunning.set()    
     GUIserver = HTTPServer((GUIIP, GUIPort), GUIHandler)
     GUIserverThread = ThreadInterruptable(target=GUIserver.serve_forever, name="GUIserverThread")
-    #serviceListPullThread = Thread(target = update_with_commands, args=(['cat /home/mk/Documents/CM_HA_Demo/dummy_inputs/service_list.txt'], node_dicts, service_list_to_dict, localSSHCreds))
     serviceListPullThread = ThreadInterruptable(target = update_with_commands, args=(['nova service-list'], node_dicts, service_list_to_dict), name='serviceListPullThread')    
     dictMergerThread = ThreadInterruptable(target=dictMerger, args=(5, fetchInterval), name="dictMergerThread")
     callLoadGetterThread = ThreadInterruptable(target=update_with_call_load, name="callLoadGetterThread")
@@ -349,5 +336,4 @@ if __name__ == '__main__':
         threadsRunning.clear()
         for aThread in allThreads: 
             aThread._stop()
-        node_dicts.join()      
-        sys.exit()
+        node_dicts.join()
