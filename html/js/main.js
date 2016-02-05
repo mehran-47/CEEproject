@@ -103,7 +103,7 @@ function JSONToHTML(text){
                     createDOMElementAndAdd(
                         'div', 
                         appsContainer, 
-                        '<div class=" '+ cssClassToAdd+'"'+ styleToadd +' ><div>' + anApp + '</div>'+callDiv+'</div>', 
+                        '<div class=" '+ cssClassToAdd+'"><div>' + anApp + '</div>'+callDiv+'</div>', 
                         'eaCEEGUI-raNode-raApp', 
                         anApp+'-'+nodes[i].id);
                 }
@@ -115,7 +115,7 @@ function JSONToHTML(text){
         //setDemoCases();
     }
     nodesContainer.insertBefore(createDOMElement('div', '<h3>Fuel</h3>', 'ebBgColor_darkGreen_80 eaCEEGUI-raNode-cic', 'FuelNode'), nodesContainer.childNodes[0]);
-    setNodeWidth(nodes.length-3, 300);
+    setNodeWidth(nodes.length-3, 400);
 }
 
 function createDOMElement(elementType, HTMLstring, cssClass, elementId){

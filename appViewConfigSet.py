@@ -15,7 +15,7 @@ if __name__ == '__main__':
 		toSet = True if sys.argv[-1]=='True' or sys.argv[-1]=='true' else False
 		with open('html/appViewConfig.json', 'r') as avc: avcDict = json.loads(avc.read())
 		for aRegex in sys.argv[1:-1]:
-			compiledRegex = re.compile(aRegex)
+			compiledRegex = re.compile(aRegex, re.I)
 			for anApp in avcDict:
 				if compiledRegex.search(anApp) is not None:
 					avcDict[anApp]['isDemoCase'], avcDict[anApp]['visibility'] = toSet, toSet
