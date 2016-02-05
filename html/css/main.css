@@ -207,7 +207,7 @@ textarea {
 }
 
 .eaCEEGUI-raNode h3{
-    font-size: 0.8em;
+    font-size: 0.95em;
     margin-bottom: 0;
     font-weight: bold;
     color: white;
@@ -250,35 +250,32 @@ body .eaCEEGUI-raNode-cic h3{
     /*
       display:table-cell; 
       padding:0 0 5px 8px;
+      background: rgba(255, 255, 255, 0.2);
     */
-   background: rgba(255, 255, 255, 0.2);
-   border: 1px solid rgba(255, 255, 255, 0.4);
-   border-radius: 2px;
-   margin: 0 auto;
-   padding: 5px;
-   vertical-align: middle;
-   width: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    font-size: 1.4rem;
+    height: 45px;
+    margin: 0 auto;
+    padding: 28px 0 0 10px;
+    vertical-align: middle;
 }
 
 .eaCEEGUI-raNode-raApp-innerContainer p, .eaCEEGUI-raNode-raApp-innerContainerDemoCase p{
-    font-size: 1em;
+    font-size: 1.4em;
     text-align: left;
     margin: 0;
 }
 
-.eaCEEGUI-raNode-raApp-innerContainer-callSpaces{
-    text-align: left;
-    display: inline;
-    float: left;
-    margin: 0;
-    font-size:0.8em;
+body .eaCEEGUI-raNode-raApp-innerContainer-callSpaces{
+    margin-top: 8px;
+    padding: 24px 0 5px 10px;
 }
 
 .eaCEEGUI-raNode-raApp-innerContainerDemoCase{
     color: #00285e;
     border:solid 1px #fff;
-    font-size: 1.1em;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,1);
     margin-bottom: 2px;
 }
 

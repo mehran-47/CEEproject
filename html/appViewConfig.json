@@ -1,11 +1,11 @@
 {
     "Backendv-1":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "Backendv-2":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "CSCF-PL-3":{
         "isDemoCase":true,
@@ -19,12 +19,20 @@
         "isDemoCase":true,
         "visibility":true
     },
+    "CSCF-PL-6":{
+        "isDemoCase":true,
+        "visibility":true
+    },
     "CSCF-SC-1":{
         "isDemoCase":true,
         "visibility":true
     },
     "CSCF-SC-2":{
         "isDemoCase":true,
+        "visibility":true
+    },
+    "GUI-VM":{
+        "isDemoCase":false,
         "visibility":true
     },
     "IPW-PL-3":{
@@ -56,6 +64,26 @@
         "visibility":true
     },
     "IPW-SC2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPWorks-PL3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPWorks-PL4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPWorks-SC1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPWorks-SC2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MRS-BGF":{
         "isDemoCase":false,
         "visibility":true
     },
@@ -132,6 +160,18 @@
         "visibility":true
     },
     "cs-atlas2":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "etmereu_ubuntu":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "etmereu_ubuntu1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "etmereu_ubuntu2":{
         "isDemoCase":false,
         "visibility":true
     },

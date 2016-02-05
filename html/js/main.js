@@ -98,11 +98,12 @@ function JSONToHTML(text){
             for(var anApp in data[nodes[i].id]['applications']){
                 if(appViewConfig[anApp]['visibility']){
                     var cssClassToAdd = appViewConfig[anApp]['isDemoCase'] ? 'eaCEEGUI-raNode-raApp-innerContainerDemoCase' : 'eaCEEGUI-raNode-raApp-innerContainer';
-                    var callDiv = data[nodes[i].id]['applications'][anApp]['calls']!=undefined ? '<div style="font-size:0.8em">Calls : '+data[nodes[i].id]['applications'][anApp]['calls']+'</div>':'';
+                    cssClassToAdd += data[nodes[i].id]['applications'][anApp]['calls']!=undefined ? ' eaCEEGUI-raNode-raApp-innerContainer-callSpaces' : ''; 
+                    var callDiv = data[nodes[i].id]['applications'][anApp]['calls']!=undefined ? '<div style="font-size:0.8em;">Calls : '+data[nodes[i].id]['applications'][anApp]['calls']+'</div>':'';                    
                     createDOMElementAndAdd(
                         'div', 
                         appsContainer, 
-                        '<div class=" '+ cssClassToAdd+'"><div>' + anApp + '</div>'+callDiv+'</div>', 
+                        '<div class=" '+ cssClassToAdd+'"'+ styleToadd +' ><div>' + anApp + '</div>'+callDiv+'</div>', 
                         'eaCEEGUI-raNode-raApp', 
                         anApp+'-'+nodes[i].id);
                 }
@@ -110,7 +111,8 @@ function JSONToHTML(text){
         nodes[i].appendChild(appsContainer);
         }
         nodesContainer.appendChild(nodes[i]);
-        setDemoCases();
+        ////'the "math" for fixing the padding of all VMs.'
+        //setDemoCases();
     }
     nodesContainer.insertBefore(createDOMElement('div', '<h3>Fuel</h3>', 'ebBgColor_darkGreen_80 eaCEEGUI-raNode-cic', 'FuelNode'), nodesContainer.childNodes[0]);
     setNodeWidth(nodes.length-3, 300);
@@ -156,8 +158,8 @@ function setNodeWidth(nodesNum, offset){
     }
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode'), newWidth);
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raAppsContainer'), newWidth);
-    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase'), newWidth-20);
-    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainer'), newWidth-20);
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase'), newWidth-24);
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainer'), newWidth-24);
 }
 
 function dropCurtain(){

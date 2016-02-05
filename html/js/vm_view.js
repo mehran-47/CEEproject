@@ -89,12 +89,12 @@ function JSONToHTML(text){
             if(data[nodes[i].id]['state']=='up'){
                 nodes[i].className += ' ebBgColor_darkBlue_80';
             }else{
-                nodes[i].className += ' ebBgColor_grey_60';
+                nodes[i].className += ' ebBgColor_grey_60 node_down';
             }
             if(data[nodes[i].id]['isEnabled']=='enabled'){
                 nodes[i].getElementsByTagName('h3')[0].className += ' ebBgColor_darkBlue_80';
             }else{
-                nodes[i].getElementsByTagName('h3')[0].className += ' ebBgColor_grey_80';
+                nodes[i].getElementsByTagName('h3')[0].className += ' ebBgColor_grey_60';
             }
         }       
         if('applications' in data[nodes[i].id]){

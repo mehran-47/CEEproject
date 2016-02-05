@@ -28,14 +28,15 @@ class mainLogLiveParser():
         self.shouldRun = shouldRun
         self.eventsMap = {}
         self.vmIdToNameMap = {}
+        self.latestApps = set()
         self.appDictForGui = {}
         self.updateApps = False
         self.vmIdToNameMapUpdated = False
         self.log = logger
-        #logging.basicConfig(level=logLevel, format='%(asctime)s: %(message)s')
-        self.vmIdToNameMapUpdaterThread = ThreadInterruptable(target=self.__updateVmIdToNameMap, name="private__updateVmIdToNameMapThread")
-        self.vmIdToNameMapUpdaterThread.start()        
-    
+        self.vmIdToNameMapUpdaterThread = ThreadInterruptable(target=self.refreshVmIdToNameMap, name="init__refreshVmIdToNameMap")
+        self.vmIdToNameMapUpdaterThread.start()
+
+
     def updateAppDictForGui(self):
         toRet = {}
         #if self.vmIdToNameMapUpdated:
@@ -45,21 +46,26 @@ class mainLogLiveParser():
                 self.updateApps = True
         for aVmId in self.vmIdToNameMap:
             if self.vmIdToNameMap[aVmId]['name'] not in toRet[self.vmIdToNameMap[aVmId]['host']]['applications']:
-                toRet[self.vmIdToNameMap[aVmId]['host']]['applications'][self.vmIdToNameMap[aVmId]['name']] = {}
-                self.updateApps = True
+                if self.vmIdToNameMap[aVmId]['name'] in self.latestApps:
+                    toRet[self.vmIdToNameMap[aVmId]['host']]['applications'][self.vmIdToNameMap[aVmId]['name']] = {}
+                    self.updateApps = True
         self.appDictForGui = toRet
         exportAppListToConfigFile(self.appDictForGui)
 
-    def __updateVmIdToNameMap(self):
-        ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
+    def refreshVmIdToNameMap(self):
+        ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})
         if ps.login(self.ip, self.user, self.pw):
             mapList = execute_commands(ps, ['nova list --fields=name,host,metadata'])[3:-1]
+            #self.log.debug('Map-list, extracted directly from command "nova list --fields=name,host,metadata" \n%r' %(mapList))
             ps.logout()
             getStringFromIndex = lambda entry, i: "".join(entry.split('|')[i].split())
+            self.latestApps.clear()
             for anEntry in mapList:
                 self.vmIdToNameMap["".join(anEntry.split('|')[1].split())] = {'name': getStringFromIndex(anEntry, 2), \
                                                                             'host': getStringFromIndex(anEntry ,3), \
                                                                             'evacuationPolicy': json.loads(re.sub(r"u'|'", r'"', getStringFromIndex(anEntry, 4))).get('evacuation_policy') }
+                self.latestApps = self.latestApps | {getStringFromIndex(anEntry, 2)}
+        self.log.info('Current VMs:\n\t%s' %(", ".join(self.latestApps)))
         self.vmIdToNameMapUpdated = True
         self.updateApps = True
         self.updateAppDictForGui()
@@ -113,7 +119,7 @@ class mainLogLiveParser():
                                                             'vmName' : self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else None, \
                                                             'activeSeverity': anEvent['activeSeverity'],
                                                             'eventTime': anEvent['eventTime']}
-                            #do something in self.vmIdToNameMap to alert that the vm is not available/host is in trouble
+                            #do something in self.vmIdToNameMap to alert that the vm is not available
                             self.vmIdToNameMapUpdated = False
                     elif anEvent['activeSeverity']==1:
                         if anEvent['vm'] in self.vmIdToNameMap:
@@ -122,7 +128,7 @@ class mainLogLiveParser():
                             self.vmIdToNameMapUpdated = True
                             self.updateApps = True
                         if anEvent['vm'] in self.eventsMap:
-                            del  self.eventsMap[anEvent['vm']]
+                            del self.eventsMap[anEvent['vm']]
                     qsWithRegexes['vmUnavailable']['valueQ'].task_done()
                     self.log.debug('-------got from Q------%r-------------', anEvent)
                     self.log.debug('-------Current Events\' Map------%r-------------', self.eventsMap)

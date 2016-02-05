@@ -33,7 +33,7 @@ qwrs_2 = {'vmUnavailable':\
                                 [r'\{.+\}', lambda x: json.loads(x)['host'], 'host'], \
                                 [r'(?<=VM\=)(.+)(?=; major_type)', lambda x: x, 'vm'], \
                                 [r'(?<=active_severity\:)(\s+\d)', lambda x: int("".join(x.split())), 'activeSeverity'], \
-                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S") if len(x)>0 else None, 'eventTime']
+                                [r'(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2})(?=\s)', lambda x: x, 'eventTime']
                             ] \
                     },\
                 'valueQ': Queue()\
@@ -43,7 +43,7 @@ extraVerbose = False
 
 
 def setConfigIPToActiveCIC():
-    ps, ps1 = (pxssh.pxssh(options={"StrictHostKeyChecking": "no"}),)*2 
+    ps, ps1 = (pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"}),)*2 
     with open('config.json', 'r') as conF:
         configDict = json.loads(conF.read())
         ip, user, pw = configDict['ssh']['ip'], configDict['ssh']['username'], configDict['ssh']['password']
@@ -104,6 +104,8 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
         for aHost in GUI_dict:
             if aHost in mlp.appDictForGui:
                 GUI_dict[aHost]['applications'] = mlp.appDictForGui[aHost]['applications']
+            elif 'applications' in GUI_dict[aHost]:
+                del GUI_dict[aHost]['applications']
             if GUI_dict[aHost].get('applications') is not None:
                 for anApp in callLoadDict:
                     for aVm in GUI_dict[aHost]['applications']:
@@ -113,7 +115,7 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
 
 
 def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSHCreds):
-    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})
     global threadsRunning
     try:
         for i in range(1, SSHConnectAttempts):
@@ -131,7 +133,7 @@ def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSH
 
 def __update_with_call_load(appName, creds):
     global callLoadDict
-    sshHandle = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})   
+    sshHandle = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})   
     try:
         if sshHandle.login(creds['ip'], creds['username'], creds['password']):
             while threadsRunning.is_set():
@@ -141,7 +143,7 @@ def __update_with_call_load(appName, creds):
                 try:
                     tempCallLoadDict = json.loads(tempLines) if tempLines is not None else {}
                 except ValueError:
-                    log.error("Invalid call info received, error in output of %s:%s" %(creds['ip'], creds['command_to_send']))
+                    log.warning("Invalid call info received, error in output of %s:%s. Provided output:\n\t%s " %(creds['ip'], creds['command_to_send'], tempLines))
                     tempCallLoadDict = {}
                 tempCallLoadDict = {appName+'-'+k:v for k, v in tempCallLoadDict.items()}
                 for aVm in tempCallLoadDict:
@@ -167,43 +169,11 @@ def update_with_call_load():
         allThreads.append(updateWithCallLoadPrivateThread)
 
 
-def update_with_oneoff_command(commandList, dictToUpdate, sshInfo=SSHCreds):
-    ps = pxssh.pxssh()    
-    if ps.login(sshInfo['ip'], sshInfo['user'], sshInfo['pw']):
-        extractedAppDict = app_list_to_dict(execute_commands(ps, commandList))
-        exportAppListToConfigFile(extractedAppDict)
-        dictToUpdate.update(extractedAppDict)
-    ps.logout()
-
-
-def reloadApps(dictToUpdate, source):
-    for key in dictToUpdate:
-        if key not in source or len(source[key]['applications'])==0:
-            dictToUpdate[key]['applications'] = {}
-        else:
-            dictToUpdate[key]['applications'] = source[key]['applications']        
-
-
-def getUpNodeCount(dictToCountFrom):
-    toRet = 0
-    for aNode in dictToCountFrom:
-        if dictToCountFrom[aNode]['state']=='up':
-            toRet += 1
-    return toRet
-
-
-def _reset_updateApps():
-    while True:
-        global updateApps
-        updateApps = True
-        time.sleep(60)
-
-
 def button_action_reboot(hostName):
-    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})
     try:
         if ps.login(SSHIP, SSHUser, SSHPw):
-            #execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' "echo "reboot">rbtT"'])
+            #execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' "echo "reboot">rbt"'])
             execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' reboot'])
             ps.logout()
     except pexpectEndOfFile:
@@ -211,11 +181,71 @@ def button_action_reboot(hostName):
         return
 
 
-def button_action_scale(scriptPath, actionType):
-    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no"})
+def __refreshApps(delay):
+    time.sleep(delay)
+    mlp.refreshVmIdToNameMap()
+    log.info('Refreshed app-map post scaling')
+    log.debug('App-dict for GUI (mlp.appDictForGui):\n%r\n' %(mlp.appDictForGui))
+    log.debug('GUI_dict:\n%r\n' %(GUI_dict))
+
+
+def __scaleInPrep(appName, payLoad, delay):
+    with open('config.json', 'r') as conF: 
+        callCreds = json.loads(conF.read())['ssh_call_info'][appName]
+    try:
+        child = spawn('ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+callCreds['username']+'@'+callCreds['ip']+' -t -s cli', timeout=15)
+        child.expect('Password:')
+        child.sendline(callCreds['password'])
+        child.sendline('configure')
+        #child.sendline('show all ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1,ComputeResourceRole=PL-5')
+        #child.sendline('show all ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1')
+        child.sendline('no ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1,ComputeResourceRole='+payLoad+',provides')
+        child.sendline('commit')
+        child.sendline('exit')
+        if extraVerbose: 
+            log.debug('Providing output while executing:"no ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1,ComputeResourceRole=PL-5,provides"')
+            for line in child:
+                log.debug(line.decode('utf-8'))
+        child.close()
+        log.info('Prepared for scaling in')
+        time.sleep(delay)
+    except TIMEOUT:
+        log.warning('SSH timeout executing "scaleInPrep"')
+        time.sleep(delay)
+
+
+def button_action_scale(actionType):
+    with open('config.json', 'r') as conF: 
+        callCreds = json.loads(conF.read())['ssh_call_info']['CSCF']
+    ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"}, timeout=60)
     if ps.login(scaleAction['ip'], scaleAction['user'], scaleAction['pw']):
-        ps.sendline('echo "~/CSCF_SCALE.sh 5 '+actionType+'">~/tempScaleAction')
-    ps.logout()
+        apploadDelay = 40
+        lastPL = max(int(vm[-1]) for vm in mlp.latestApps if 'PL' in vm)
+        try:
+            if actionType=='out':
+                if lastPL>70:
+                    log.info('Cannot scale out beyond PL-%d' %(lastPL))
+                    return
+                ps.sendline(scaleAction['scriptpath']+' '+str(lastPL+1)+' out &')
+                ps.sendline('echo "'+scaleAction['scriptpath']+' '+str(lastPL+1)+' out">dispatchedCommand')
+                log.info('Scaling out PL-%d' %(lastPL+1))
+            if actionType=='in':
+                if lastPL<5:
+                    log.info('Cannot scale in once reached PL-4')
+                    return
+                __scaleInPrep('CSCF', 'PL-'+str(lastPL) ,15)
+                ps.sendline(scaleAction['scriptpath']+' '+str(lastPL)+' in &')
+                ps.sendline('echo "'+scaleAction['scriptpath']+' '+str(lastPL)+' in">dispatchedCommand')
+                log.info('Scaling in PL-%d' %(lastPL))
+                apploadDelay = 20
+            appreloaderThread = ThreadInterruptable(target=__refreshApps, args=(apploadDelay,), name='appreloaderThread')
+            appreloaderThread.start()
+            allThreads.append(appreloaderThread)
+            ps.logout()
+            return            
+        except pexpectEndOfFile:
+            log.error('Error scaling %s PL-%d' %(actionType, lastPL))
+            return
 
 
 class ThreadInterruptable(Thread):
@@ -238,7 +268,7 @@ class ThreadInterruptable(Thread):
     def killThreads(self, tl):
         for aThread in tl:
             aThread._tstate_lock = None
-            aThread._stop() 
+            aThread._stop()
 
 
 class GUIHandler(BaseHTTPRequestHandler):
@@ -261,6 +291,9 @@ class GUIHandler(BaseHTTPRequestHandler):
                 if extraVerbose: log.debug(json.dumps(GUI_dict))
                 self.wfile.write(bytes(json.dumps(GUI_dict), 'UTF-8'))
                 return
+            elif self.path == '/getEvacEvents':
+                self.wfile.write(bytes(json.dumps(mlp.eventsMap), 'UTF-8'))
+                return
             elif os.path.isfile(root_dir + self.path):
                 self.send_response(200)
                 self.send_header("Content-type", RequestedFileType)
@@ -270,15 +303,15 @@ class GUIHandler(BaseHTTPRequestHandler):
                 fp.close()
                 return
             elif len(self.path.split('reboot--'))>1:
-                Thread(target=button_action_reboot, args=(self.path.split('reboot--')[1],)).start()
+                Thread(target=button_action_reboot, args=(self.path.split('reboot--')[1],), name="rebooterThread").start()
                 log.info('Got command to reboot %r' %(self.path.split('reboot--')[1]))
                 return
             elif len(self.path.split('actionScaleIn'))>1:
-                Thread(target=button_action_scale, args=(scaleAction['scriptpath'],'in')).start()
+                Thread(target=button_action_scale, args=('in',), name="scalerThread").start()
                 log.info('Got command to scale-in')
                 return
             elif len(self.path.split('actionScaleOut'))>1:
-                Thread(target=button_action_scale, args=(scaleAction['scriptpath'],'out')).start()
+                Thread(target=button_action_scale, args=('out',), name="scalerThread").start()
                 log.info('Got command to scale-out')
                 return
             else:
