@@ -1,8 +1,9 @@
 {
     "guiserver":{
         "ip":"142.133.117.154",
-        "maxcalls":5,
-        "port":8080
+        "maxcalls":100,
+        "port":8080,
+        "refreshInterval": 1
     },
     "scale_action":{
         "ip":"10.118.37.38",

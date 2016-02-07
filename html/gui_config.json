@@ -1,1 +1,1 @@
-{"maxcalls": 5, "ajaxlink": "http://142.133.117.154:8080"}
+{"maxcalls": 100, "refreshinterval": 1, "ajaxlink": "http://142.133.117.154:8080"}

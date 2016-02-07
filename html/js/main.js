@@ -23,7 +23,7 @@ function setLinkAndParseHTML(text, parserFunction){
     ajaxLink = parsedConfig.ajaxlink+'/getOverviewData';
     getAndExecute('appViewConfig.json', loadViewSpecs);
     getAndExecuteWrapper();
-    intervalExec = setInterval(getAndExecuteWrapper, 3000);
+    intervalExec = setInterval(getAndExecuteWrapper, parsedConfig.refreshinterval*1000);
 }
 
 function loadViewSpecs(text){

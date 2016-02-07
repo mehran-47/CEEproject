@@ -15,6 +15,7 @@ LOG_LEVELS = { 'debug':logging.DEBUG,
             'error':logging.ERROR,
             'critical':logging.CRITICAL,
             }
+frontEndEventStack = []
 node_dicts = Queue(10)
 updateApps = False
 GUI_dict = {}
@@ -40,6 +41,20 @@ qwrs_2 = {'vmUnavailable':\
                 }\
             }
 extraVerbose = False
+
+
+def __sendDummyEventsToGUI():
+    dummySend = True
+    while dummySend:
+        toSend = input('type dummy event to send: >\n')
+        try:
+            if toSend.split('#')[1]=='stop': 
+                dummySend=False
+                continue
+            frontEndEventStack.append(toSend)
+        except IndexError:
+            print('invalid dummy input!')
+
 
 
 def setConfigIPToActiveCIC():
@@ -83,10 +98,10 @@ def load_config():
         SSHIP, SSHUser, SSHPw = configDict['ssh']['ip'], configDict['ssh']['username'], configDict['ssh']['password']
         SSHCreds['ip'], SSHCreds['user'], SSHCreds['pw'] = SSHIP, SSHUser, SSHPw
         SSHConnectAttempts, fetchInterval = configDict['ssh']['connectattempts'], float(configDict['ssh']['fetchinterval'])
-        GUIIP, GUIPort, maxCalls = configDict['guiserver']['ip'], configDict['guiserver']['port'], configDict['guiserver']['maxcalls']
+        GUIIP, GUIPort = configDict['guiserver']['ip'], configDict['guiserver']['port'] 
         scaleAction = configDict['scale_action']
         with open(root_dir+'gui_config.json', 'w') as guiconF:
-            guiconF.write(json.dumps({'ajaxlink':'http://'+GUIIP+':'+str(GUIPort), 'maxcalls':maxCalls}))
+            guiconF.write(json.dumps({'ajaxlink':'http://'+GUIIP+':'+str(GUIPort), 'maxcalls':configDict['guiserver']['maxcalls'], 'refreshinterval':configDict['guiserver']['refreshInterval'] }))
 
 
 def dictMerger(timeoutDelay=5, updateInterval=3):
@@ -185,6 +200,7 @@ def __refreshApps(delay):
     time.sleep(delay)
     mlp.refreshVmIdToNameMap()
     log.info('Refreshed app-map post scaling')
+    frontEndEventStack.append('Server-response: Scaling action complete #{"scaling":"stop"}')
     log.debug('App-dict for GUI (mlp.appDictForGui):\n%r\n' %(mlp.appDictForGui))
     log.debug('GUI_dict:\n%r\n' %(GUI_dict))
 
@@ -208,6 +224,7 @@ def __scaleInPrep(appName, payLoad, delay):
                 log.debug(line.decode('utf-8'))
         child.close()
         log.info('Prepared for scaling in')
+        frontEndEventStack.append('Server-response: Cleanup complete; prepared for scaling in #{}')
         time.sleep(delay)
     except TIMEOUT:
         log.warning('SSH timeout executing "scaleInPrep"')
@@ -229,6 +246,7 @@ def button_action_scale(actionType):
                 ps.sendline(scaleAction['scriptpath']+' '+str(lastPL+1)+' out &')
                 ps.sendline('echo "'+scaleAction['scriptpath']+' '+str(lastPL+1)+' out">dispatchedCommand')
                 log.info('Scaling out PL-%d' %(lastPL+1))
+                frontEndEventStack.append('Server-response: Scaling out PL-'+str(lastPL+1)+'#{"scaling":"start"}')
             if actionType=='in':
                 if lastPL<5:
                     log.info('Cannot scale in once reached PL-4')
@@ -237,6 +255,7 @@ def button_action_scale(actionType):
                 ps.sendline(scaleAction['scriptpath']+' '+str(lastPL)+' in &')
                 ps.sendline('echo "'+scaleAction['scriptpath']+' '+str(lastPL)+' in">dispatchedCommand')
                 log.info('Scaling in PL-%d' %(lastPL))
+                frontEndEventStack.append('Server-response: Scaling in PL-'+ str(lastPL)+'#{"scaling":"start"}')
                 apploadDelay = 20
             appreloaderThread = ThreadInterruptable(target=__refreshApps, args=(apploadDelay,), name='appreloaderThread')
             appreloaderThread.start()
@@ -292,7 +311,18 @@ class GUIHandler(BaseHTTPRequestHandler):
                 self.wfile.write(bytes(json.dumps(GUI_dict), 'UTF-8'))
                 return
             elif self.path == '/getEvacEvents':
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
                 self.wfile.write(bytes(json.dumps(mlp.eventsMap), 'UTF-8'))
+                return
+            elif self.path == '/frontEndEventStack':
+                #self.wfile.write(bytes(frontEndEventStack.pop(0) if len(frontEndEventStack)>0 else "null", 'UTF-8'))
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(bytes(json.dumps(frontEndEventStack), 'UTF-8'))
+                frontEndEventStack.clear()
                 return
             elif os.path.isfile(root_dir + self.path):
                 self.send_response(200)
@@ -349,7 +379,7 @@ if __name__ == '__main__':
     log.addHandler(sh)
     setConfigIPToActiveCIC()
     load_config()
-    mlp = mainLogLiveParser(threadsRunning, logger=log)
+    mlp = mainLogLiveParser(threadsRunning, logger=log, GUIEventStack=frontEndEventStack)
     threadsRunning.set()    
     GUIserver = HTTPServer((GUIIP, GUIPort), GUIHandler)
     GUIserverThread = ThreadInterruptable(target=GUIserver.serve_forever, name="GUIserverThread")
@@ -358,7 +388,8 @@ if __name__ == '__main__':
     callLoadGetterThread = ThreadInterruptable(target=update_with_call_load, name="callLoadGetterThread")
     appPutterThread = ThreadInterruptable(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha/main.log | grep -v DEBUG'], qwrs_2), name="appPutterThread")
     appGetterThread = ThreadInterruptable(target=mlp.startMappingEventsLive, args=(qwrs_2,), name="appGetterThread")
-    allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread]
+    __dummyThread = ThreadInterruptable(target=__sendDummyEventsToGUI)
+    allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread, __dummyThread]
     try:
         log.info('GUI running at %s:%d' %(GUIIP, GUIPort))
         for aThread in allThreads: 

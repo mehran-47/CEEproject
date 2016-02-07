@@ -18,7 +18,7 @@ class ThreadInterruptable(Thread):
                 logging.warning('Ignored AssertionError in parent class')
 
 class mainLogLiveParser():
-    def __init__(self, shouldRun, logger=logging):
+    def __init__(self, shouldRun, logger=logging, GUIEventStack=[]):
         self.credDict = {}
         with open('config.json', 'r') as conF:
             self.credDict = json.loads(conF.read())['ssh']
@@ -35,6 +35,7 @@ class mainLogLiveParser():
         self.log = logger
         self.vmIdToNameMapUpdaterThread = ThreadInterruptable(target=self.refreshVmIdToNameMap, name="init__refreshVmIdToNameMap")
         self.vmIdToNameMapUpdaterThread.start()
+        self.GUIEventStack = GUIEventStack
 
 
     def updateAppDictForGui(self):
@@ -119,9 +120,15 @@ class mainLogLiveParser():
                                                             'vmName' : self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else None, \
                                                             'activeSeverity': anEvent['activeSeverity'],
                                                             'eventTime': anEvent['eventTime']}
+                            vmName = self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else anEvent['vm']
                             #do something in self.vmIdToNameMap to alert that the vm is not available
+                            self.GUIEventStack.append('Server-response: VM \"'+vmName+'\" unavailable. Starting evacuation'+'#{"evacuation":"start"}')
+                            self.log.debug('Server-response: VM \"'+vmName+'\" unavailable. Starting evacuation')
                             self.vmIdToNameMapUpdated = False
                     elif anEvent['activeSeverity']==1:
+                        vmName = self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else anEvent['vm']
+                        self.log.debug('Server-response: VM \"'+vmName+'\" recovered. Evacuation complete')
+                        self.GUIEventStack.append('Server-response: VM \"'+vmName+'\" recovered. Evacuation complete'+'#{"evacuation":"stop"}')
                         if anEvent['vm'] in self.vmIdToNameMap:
                             self.vmIdToNameMap[anEvent['vm']]['host'] = anEvent['host']
                             self.updateAppDictForGui()

@@ -12,9 +12,13 @@ var domDemoCaseVMExtraPadding = 40;
 var xhrErrorCount = 0;
 var loadBarRefNum = 200;
 var intervalExec;
+var eventsDisplayExec;
 var latestEventString = "";
 var nodesWidthOffset = 80;
 var vmsHeightOffset = 4.75;
+var failureMesurerClock = new StopWatch(true, new Date());
+var scalingMesurerClock = new StopWatch(true, new Date());
+var evacuationMesurerClock = new StopWatch(true, new Date());
 
 window.onload = function(){
     getAndExecute("gui_config.json", setLinkAndParseHTML);    
@@ -24,17 +28,67 @@ window.onload = function(){
 
 function setLinkAndParseHTML(text, parserFunction){
     parsedConfig = JSON.parse(text);
-    ajaxLink = parsedConfig.ajaxlink+'/getOverviewData';
+    ajaxLink = parsedConfig.ajaxlink;
+    loadBarRefNum = parsedConfig.maxcalls;
     getAndExecute('appViewConfig.json', loadViewSpecs);
     getAndExecuteWrapper();
-    intervalExec = setInterval(getAndExecuteWrapper, 3000);
+    intervalExec = setInterval(getAndExecuteWrapper, parsedConfig.refreshinterval*1000);
+    eventsDisplayExec = setInterval(checkAndDisplayEvents, parsedConfig.refreshinterval*1000);
     document.getElementById('scale_out').onclick = scaleOut;
     document.getElementById('scale_in').onclick = scaleIn;
-    document.getElementById('referenceNumber').onblur = setCallReferenceNumber
+    document.getElementById('referenceNumber').onblur = setCallReferenceNumber;
 }
 
 function loadViewSpecs(text){
     appViewConfig = JSON.parse(text); 
+}
+
+function displayTimerOnEvent(eventText){
+    var clockTrigger = JSON.parse(eventText.split('#')[1]);
+    var timerDOM = document.getElementById('timers');
+    var activateClock = function(theClock, startStop){
+        if(startStop=="start"){
+            theClock.initTime = new Date();
+            theClock.runClock = true;
+            theClock.intervalExec = setInterval(function(){theClock.run()}, 1000);
+        }else{
+            theClock.runClock = false;
+            clearInterval(theClock.intervalExec);
+        }
+    }
+    if(clockTrigger.failure!=undefined){
+        failureMesurerClock.titleDOM.innerHTML = "Time since failure detection:";
+        timerDOM.appendChild(failureMesurerClock.titleDOM);
+        timerDOM.appendChild(failureMesurerClock.DOM);        
+        activateClock(failureMesurerClock, clockTrigger.failure);
+    }
+    if(clockTrigger.scaling!=undefined){
+        scalingMesurerClock.titleDOM.innerHTML = "Time since scaling event started: ";
+        timerDOM.appendChild(scalingMesurerClock.titleDOM);
+        timerDOM.appendChild(scalingMesurerClock.DOM);
+        activateClock(scalingMesurerClock, clockTrigger.scaling);   
+    }
+    if(clockTrigger.evacuation!=undefined){
+        evacuationMesurerClock.titleDOM.innerHTML = "Time since evacuation started : "
+        timerDOM.appendChild(evacuationMesurerClock.titleDOM);
+        timerDOM.appendChild(evacuationMesurerClock.DOM);
+        activateClock(evacuationMesurerClock, clockTrigger.evacuation);      
+    }
+}
+
+function checkAndDisplayEvents(){
+    var setLatestEvent = function(eventTextFromServer){
+        console.log("Event received:"+eventTextFromServer);
+        var parsedEvents = JSON.parse(eventTextFromServer);
+        for(var i=0;i<parsedEvents.length; i++){
+            displayTimerOnEvent(parsedEvents[i])
+            latestEventString = parsedEvents[i].split('#')[0];
+            showInEvent();
+        }
+    }
+    getAndExecute(ajaxLink+'/frontEndEventStack', setLatestEvent);    
+    //http://142.133.117.154:8080/frontEndEventStack
+    //getAndExecute('http://142.133.117.154:8080/frontEndEventStack', setLatestEvent);
 }
 
 function getAndExecute(link, callback){
@@ -50,7 +104,7 @@ function getAndExecute(link, callback){
 }
 
 function getAndExecuteWrapper(){
-    getAndExecute(ajaxLink, JSONToHTML);
+    getAndExecute(ajaxLink+'/getOverviewData', JSONToHTML);
     frameCount++;
 }
 
@@ -64,6 +118,7 @@ function JSONToHTML(text){
         xhrErrorCount++;
         if(xhrErrorCount>0){
             clearInterval(intervalExec);
+            clearInterval(eventsDisplayExec);
             dropCurtain();
         }
         if(window.console){
@@ -194,7 +249,7 @@ function setVmHeights(offset){
             vms[j].style.height = (100-offset*vms.length)/vms.length + '%';
             var loadBars = vms[j].getElementsByClassName('eaCEEGUI-raNode-raAppsContainer-loadBar')
             for(var k=0; k<loadBars.length; k++){
-                loadBars[k].style.height = 87-13*(vms.length-1) + '%';
+                loadBars[k].style.height = 92-13*(vms.length-1) + '%';
             }
         }
     }
@@ -216,7 +271,8 @@ function setNodeWidth(nodesNum, offset){
 }
 
 function showInEvent(){
-    var eventDom = createDOMElement('p', latestEventString, '', '');
+    var dt = new Date();
+    var eventDom = createDOMElement('p', dt.toLocaleDateString() +" "+ dt.toLocaleTimeString() +": " + latestEventString, '', '');
     var eventsPanel = document.getElementById('events_list');
     //document.getElementById('events_panel').appendChild(eventDom);
     //eventsPanel.insertBefore(eventDom, eventsPanel.childNodes.length>1?eventsPanel.childNodes[2]);
@@ -247,4 +303,20 @@ function setCallReferenceNumber(){
 function dropCurtain(){
     var curtain = createDOMElement('div', '', 'eaCEEGUI-rCurtain', 'errorCurtain');
     document.body.insertBefore(curtain, document.body.childNodes[0]);
+}
+
+/////////////////////////Stopwatch object////////////////////////////////////////////////
+function StopWatch(runClock, initTime){
+    this.runClock = runClock;
+    this.initTime = initTime;
+    this.latestTime = new Date();
+    this.titleDOM = createDOMElement('p', '', 'clockTitle', '');
+    this.DOM = createDOMElement('div', Math.round((this.initTime - this.latestTime)/1000) + ' <span>seconds</span>', 'clockDOM', '');
+    this.intervalExec = null;
+    this.run = function(){
+        if(this.runClock){
+            this.latestTime = new Date();
+            this.DOM.innerHTML = Math.round((this.latestTime-this.initTime)/1000)+ ' <span>seconds</span>';
+        }
+    }
 }
