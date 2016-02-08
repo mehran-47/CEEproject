@@ -3,7 +3,7 @@
 
 | Source file                     | Usage/Description                                                                               |
 |---------------------------------|-------------------------------------------------------------------------------------------------|
-| GUIserver.py                    | ./GUIserver.py                                                                           |
+| GUIserver.py                    | ./GUIserver.py                                                                           		|
 |                                 | the most basic usage, will run the GUI Server on the local host with the address provided in the|
 |                                 | config.json file.                                                                               |
 |                                 | ./GUIserver.py debug                                                                            |
@@ -33,7 +33,7 @@
 |                                 | in the node. Example: "nova service-list" (wait fetchinterval) "nova service list" ...          |
 |                                 | **ssh_call_info**: Holds the IP and SSH credentials of the node where the session load is       |
 |                                 | fetched from.                                                                                   |
-| appViewConfigSet.py             | ./appViewConfigSet.py \<regexp_1> \<regexp_2> ... \<regexp_n> \<true or false>                      |
+| appViewConfigSet.py             | ./appViewConfigSet.py \<regexp_1> \<regexp_2> ... \<regexp_n> \<true or false>                  |
 |                                 | Sets all the VM names matching the regexes in the parameters 2 to n-1 to true. That is they will|
 |                                 | have both 'isDemoCase' and 'visibility' set to true or false depending on what you pass.        | 
 |                                 | ./appViewConfigSet.py -r                                                                        |

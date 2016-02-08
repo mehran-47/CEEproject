@@ -18,6 +18,7 @@ class ThreadInterruptable(Thread):
                 logging.warning('Ignored AssertionError in parent class')
 
 class mainLogLiveParser():
+    '''  A class for parsing the main CM HA log in runtime and act accordingly '''
     def __init__(self, shouldRun, logger=logging, GUIEventStack=[]):
         self.credDict = {}
         with open('config.json', 'r') as conF:

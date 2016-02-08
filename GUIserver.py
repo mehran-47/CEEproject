@@ -9,6 +9,8 @@ from pexpect import pxssh, spawn, TIMEOUT, EOF as pexpectEndOfFile
 from mainLogFromCicParser import mainLogLiveParser
 from multiprocessing import Process as mProcess
 
+
+#Global variables. (I know, I regretted this decision later as well).
 LOG_LEVELS = { 'debug':logging.DEBUG,
             'info':logging.INFO,
             'warning':logging.WARNING,
@@ -27,6 +29,7 @@ upNodeCount = 0
 root_dir = os.getcwd() + '/html/'
 SSHCreds = {'ip':'', 'user':'', 'pw':''}
 SSHIP, SSHUser, SSHPw, fetchInterval, SSHConnectAttempts, GUIIP, GUIPort = None, None, None, None, None, None, None
+#A nested dictionary to parse the CM HA main log. Look into the 'mainLogFromCicParser.py' file's 'updateQsWithRegexes' method for better understanding
 qwrs_2 = {'vmUnavailable':\
                 {'regexes':\
                     {'matcher':r'VM Unavailable;',\
@@ -45,6 +48,9 @@ latestScaleAction = {'scale':None, 'vm':None}
 
 
 def __sendDummyEventsToGUI():
+    '''
+    Method used strictly for debugging. Powerful in the sense that you can essentially start and stop any 'clock' in the front end using this. 
+    '''
     dummySend = True
     while dummySend:
         toSend = input('type dummy event to send: >\n')
@@ -58,6 +64,10 @@ def __sendDummyEventsToGUI():
 
 
 def setConfigIPToActiveCIC():
+    '''
+    Method that checks if the CIC IP provided in the config.json file is the main CIC. If not, fetches the main CIC IP and updates the config.json file accordingly.
+    If this crashes, the config.json file may end up being blank, replace it with a backup copy in such cases. (There is one on the 'dummy_inputs' directory) 
+    '''
     ps, ps1 = (pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"}),)*2 
     with open('config.json', 'r') as conF:
         configDict = json.loads(conF.read())
@@ -84,6 +94,7 @@ def setConfigIPToActiveCIC():
 
 
 def load_config():
+    ''' Loads all configuration from the config.json file and prepares the GUI '''
     with open('config.json', 'r') as conF:
         configDict = json.loads(conF.read())
         global SSHIP
@@ -105,6 +116,7 @@ def load_config():
 
 
 def dictMerger(timeoutDelay=5, updateInterval=3):
+    ''' Merges all bits of data into GUI_dict dictionary that is used by the server handler. GUI_dict is sent to the browser for every request. '''
     while threadsRunning.is_set():
         global GUI_dict
         global updateApps
@@ -130,6 +142,7 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
 
 
 def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSHCreds):
+    ''' Creates the initial dictionary mapping VMs to nodes using a sequence of commands passed by the parameter 'commandList'. '''
     ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})
     global threadsRunning
     try:
@@ -147,6 +160,7 @@ def update_with_commands(commandList, queueToUpdate, parserFunction, sshInfo=SSH
 
 
 def __update_with_call_load(appName, creds):
+    ''' Private method to run in a separate thread for each application/vm that must be updated with session load/call load. '''
     global callLoadDict
     sshHandle = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})   
     try:
@@ -178,6 +192,7 @@ def __update_with_call_load(appName, creds):
 
 
 def update_with_call_load():
+    '''  Method spawning a thread running '__update_with_call_load' for each application/vm that must be updated with session load/call load. '''
     global callLoadDict
     callCreds = {}
     with open('config.json', 'r') as conF: 
@@ -188,7 +203,9 @@ def update_with_call_load():
         allThreads.append(updateWithCallLoadPrivateThread)
 
 
+
 def button_action_reboot(hostName):
+    ''' Method name says it all '''
     ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})
     try:
         if ps.login(SSHIP, SSHUser, SSHPw):
@@ -200,6 +217,7 @@ def button_action_reboot(hostName):
 
 
 def __refreshApps(delay):
+    ''' Private method to refresh the node-to VN mapping after scaling. '''
     time.sleep(delay)
     mlp.refreshVmIdToNameMap()
     log.info('Refreshed app-map post scaling')
@@ -209,6 +227,7 @@ def __refreshApps(delay):
 
 
 def __scaleInPrep(appName, payLoad, delay):
+    ''' Necessary dirty job before scaling down/scaling in '''
     with open('config.json', 'r') as conF: 
         callCreds = json.loads(conF.read())['ssh_call_info'][appName]
     try:
@@ -233,6 +252,7 @@ def __scaleInPrep(appName, payLoad, delay):
 
 
 def button_action_scale(actionType):
+    ''' Method to take scaling action '''
     with open('config.json', 'r') as conF: 
         callCreds = json.loads(conF.read())['ssh_call_info']['CSCF']
     ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"}, timeout=60)
@@ -275,13 +295,17 @@ def button_action_scale(actionType):
             log.error('Error scaling %s PL-%d' %(actionType, lastPL))
             return
 
+
 def __filler_messages(vmName):
+    ''' Sorry. :( '''
     messages = [vmName+' has been booted up successfully #{}',vmName+' is registered to the cluster #{}', vmName+' is being enabled #{}' , vmName+' is being prepared for traffic handling #{}']
     for aMessage in messages:
         time.sleep(60)
         frontEndEventStack.append(aMessage)        
  
+
 def checkScalingActionCompletion():
+    ''' check whther the scaling action has really been complete by chekcing whther the new VMs are taking calls. '''
     if latestScaleAction['scale']=='out':
         __fillerMessagesThread = ThreadInterruptable(target=__filler_messages, args=(latestScaleAction['vm'], ))
         __fillerMessagesThread.start()
@@ -300,6 +324,7 @@ def checkScalingActionCompletion():
 
 
 class ThreadInterruptable(Thread):
+    '''Extended python thread to be able to terminate them in batch using one 'SIGTERM' '''
     def join(self, timeout=0.1):
         try:            
             super(ThreadInterruptable, self).join(timeout)

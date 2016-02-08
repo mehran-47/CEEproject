@@ -1,0 +1,29 @@
+{
+    "guiserver":{
+        "ip":"142.133.117.154",
+        "maxcalls":300,
+        "port":8080,
+        "refreshInterval": 1
+    },
+    "scale_action":{
+        "ip":"10.118.37.38",
+        "pw":"r00tme",
+        "scriptpath":"./CSCF_PL_SCALE.sh",
+        "user":"root"
+    },
+    "ssh":{
+        "connectattempts":3,
+        "fetchinterval":3,
+        "ip":"10.118.37.38",
+        "password":"r00tme",
+        "username":"root"
+    },
+    "ssh_call_info":{
+        "CSCF":{
+            "command_to_send":"/cluster/home/getCalls.sh CscfDialogueDataPot \"3 4 5 6\"",
+            "ip":"10.118.39.54",
+            "password":"rootroot",
+            "username":"root"
+        }
+    }
+}
