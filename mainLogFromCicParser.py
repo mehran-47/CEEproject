@@ -74,7 +74,7 @@ class mainLogLiveParser():
 
     def updateQsWithRegexes(self, commList, qsWithRegexes):
         try:
-            child = spawn('ssh '+self.user+'@'+self.ip)
+            child = spawn('ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+self.user+'@'+self.ip)
             child.expect(self.user+"@"+self.ip+"'s password:")
             child.sendline(self.pw)
             self.log.info('Successfully logged in on %s', self.ip)

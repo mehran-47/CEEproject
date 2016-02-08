@@ -86,9 +86,7 @@ function checkAndDisplayEvents(){
             showInEvent();
         }
     }
-    getAndExecute(ajaxLink+'/frontEndEventStack', setLatestEvent);    
-    //http://142.133.117.154:8080/frontEndEventStack
-    //getAndExecute('http://142.133.117.154:8080/frontEndEventStack', setLatestEvent);
+    getAndExecute(ajaxLink+'/frontEndEventStack', setLatestEvent);
 }
 
 function getAndExecute(link, callback){
@@ -194,15 +192,17 @@ function JSONToHTML(text){
                     var rebootButton = createDOMElement(
                         'div',
                         'reboot',
-                        'eaCEEGUI-raNode-raAppsContainer-rebootButton ebBtn_color_paleBlue',
+                        'eaCEEGUI-raNode-raAppsContainer-rebootButton ebBtn',
                         'rebootButton--'+nodes[i].id);                    
                 }
             }
         if(appsContainer.childNodes.length>0){
             rebootButton.onclick = rebootAction
-            appsContainer.appendChild(rebootButton);
+            //appsContainer.appendChild(rebootButton);
         }
         nodes[i].appendChild(appsContainer);
+        if(rebootButton!=undefined){
+            nodes[i].appendChild(rebootButton);}
         }
         nodesContainer.appendChild(nodes[i]);
         //setDemoCases();
@@ -267,7 +267,7 @@ function setNodeWidth(nodesNum, offset){
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raAppsContainer'), newWidth);
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainerDemoCase'), newWidth-20);
     loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raApp-innerContainer'), newWidth-20);
-    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raAppsContainer-rebootButton'), newWidth-20);
+    loopAndSet(document.getElementsByClassName('eaCEEGUI-raNode-raAppsContainer-rebootButton'), newWidth-8);
 }
 
 function showInEvent(){
