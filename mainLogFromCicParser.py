@@ -36,11 +36,11 @@ class mainLogLiveParser():
         self.vmIdToNameMapUpdaterThread = ThreadInterruptable(target=self.refreshVmIdToNameMap, name="init__refreshVmIdToNameMap")
         self.vmIdToNameMapUpdaterThread.start()
         self.GUIEventStack = GUIEventStack
+        self.evacuatingVm = ''
 
 
     def updateAppDictForGui(self):
         toRet = {}
-        #if self.vmIdToNameMapUpdated:
         for aVmId in self.vmIdToNameMap:
             if self.vmIdToNameMap[aVmId]['host'] not in toRet:
                 toRet[self.vmIdToNameMap[aVmId]['host']] = {'applications':{}}
@@ -122,13 +122,14 @@ class mainLogLiveParser():
                                                             'eventTime': anEvent['eventTime']}
                             vmName = self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else anEvent['vm']
                             #do something in self.vmIdToNameMap to alert that the vm is not available
-                            self.GUIEventStack.append('Server-response: VM \"'+vmName+'\" unavailable. Starting evacuation'+'#{"evacuation":"start"}')
+                            self.evacuatingVm = vmName
+                            self.GUIEventStack.append('Server-response: Failure detected. Starting evacuation #{"evacuation":"start"}')
                             self.log.debug('Server-response: VM \"'+vmName+'\" unavailable. Starting evacuation')
                             self.vmIdToNameMapUpdated = False
                     elif anEvent['activeSeverity']==1:
                         vmName = self.vmIdToNameMap[anEvent['vm']]['name'] if anEvent['vm'] in self.vmIdToNameMap else anEvent['vm']
                         self.log.debug('Server-response: VM \"'+vmName+'\" recovered. Evacuation complete')
-                        self.GUIEventStack.append('Server-response: VM \"'+vmName+'\" recovered. Evacuation complete'+'#{"evacuation":"stop"}')
+                        self.GUIEventStack.append('Server-response: VM '+vmName+' evacuated, instatiating... #{}')
                         if anEvent['vm'] in self.vmIdToNameMap:
                             self.vmIdToNameMap[anEvent['vm']]['host'] = anEvent['host']
                             self.updateAppDictForGui()

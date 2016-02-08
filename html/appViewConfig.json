@@ -35,6 +35,10 @@
         "isDemoCase":false,
         "visibility":false
     },
+    "GUI-VM_Desk":{
+        "isDemoCase":false,
+        "visibility":false
+    },
     "IPW-PL-3":{
         "isDemoCase":false,
         "visibility":true
@@ -161,7 +165,7 @@
     },
     "ToolServerW":{
         "isDemoCase":false,
-        "visibility":true
+        "visibility":false
     },
     "cs-atlas2":{
         "isDemoCase":false,

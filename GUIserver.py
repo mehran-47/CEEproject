@@ -41,6 +41,7 @@ qwrs_2 = {'vmUnavailable':\
                 }\
             }
 extraVerbose = False
+latestScaleAction = {'scale':None, 'vm':None}
 
 
 def __sendDummyEventsToGUI():
@@ -54,7 +55,6 @@ def __sendDummyEventsToGUI():
             frontEndEventStack.append(toSend)
         except IndexError:
             print('invalid dummy input!')
-
 
 
 def setConfigIPToActiveCIC():
@@ -125,7 +125,7 @@ def dictMerger(timeoutDelay=5, updateInterval=3):
                 for anApp in callLoadDict:
                     for aVm in GUI_dict[aHost]['applications']:
                         if anApp in aVm:
-                            GUI_dict[aHost]['applications'][aVm]['calls'] = callLoadDict[anApp]['calls']                            
+                            GUI_dict[aHost]['applications'][aVm]['calls'] = callLoadDict[anApp]['calls']
         time.sleep(updateInterval)
 
 
@@ -164,6 +164,10 @@ def __update_with_call_load(appName, creds):
                 for aVm in tempCallLoadDict:
                     if aVm not in callLoadDict: callLoadDict[aVm] = {}                    
                     callLoadDict[aVm]['calls'] = tempCallLoadDict[aVm]
+                #Ugly fix for confirming evacuation is 'actually' complete. Sorry. :(
+                if mlp.evacuatingVm !='' and mlp.evacuatingVm in tempCallLoadDict and tempCallLoadDict[mlp.evacuatingVm]>0:
+                    frontEndEventStack.append('Server-response: VM is operational. Evacuation complete'+'#{"evacuation":"stop"}')
+                    mlp.evacuatingVm = ''
                 time.sleep(fetchInterval)
             sshHandle.logout()
     except IndexError:
@@ -188,7 +192,6 @@ def button_action_reboot(hostName):
     ps = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile":"/dev/null"})
     try:
         if ps.login(SSHIP, SSHUser, SSHPw):
-            #execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' "echo "reboot">rbt"'])
             execute_commands(ps, ['ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no '+hostName+' reboot'])
             ps.logout()
     except pexpectEndOfFile:
@@ -200,7 +203,7 @@ def __refreshApps(delay):
     time.sleep(delay)
     mlp.refreshVmIdToNameMap()
     log.info('Refreshed app-map post scaling')
-    frontEndEventStack.append('Server-response: Scaling action complete #{"scaling":"stop"}')
+    frontEndEventStack.append('Server-response: Scaling action complete #{}')
     log.debug('App-dict for GUI (mlp.appDictForGui):\n%r\n' %(mlp.appDictForGui))
     log.debug('GUI_dict:\n%r\n' %(GUI_dict))
 
@@ -213,8 +216,6 @@ def __scaleInPrep(appName, payLoad, delay):
         child.expect('Password:')
         child.sendline(callCreds['password'])
         child.sendline('configure')
-        #child.sendline('show all ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1,ComputeResourceRole=PL-5')
-        #child.sendline('show all ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1')
         child.sendline('no ManagedElement=1,SystemFunctions=1,SysM=1,CrM=1,ComputeResourceRole='+payLoad+',provides')
         child.sendline('commit')
         child.sendline('exit')
@@ -245,17 +246,25 @@ def button_action_scale(actionType):
                     return
                 ps.sendline(scaleAction['scriptpath']+' '+str(lastPL+1)+' out &')
                 ps.sendline('echo "'+scaleAction['scriptpath']+' '+str(lastPL+1)+' out">dispatchedCommand')
+                latestScaleAction['scale'], latestScaleAction['vm'] = 'out', 'CSCF-PL-'+str(lastPL+1)
                 log.info('Scaling out PL-%d' %(lastPL+1))
                 frontEndEventStack.append('Server-response: Scaling out PL-'+str(lastPL+1)+'#{"scaling":"start"}')
+                scaleActionCompletionChecker = ThreadInterruptable(target = checkScalingActionCompletion)
+                scaleActionCompletionChecker.start()
+                allThreads.append(scaleActionCompletionChecker)
             if actionType=='in':
                 if lastPL<5:
                     log.info('Cannot scale in once reached PL-4')
                     return
                 __scaleInPrep('CSCF', 'PL-'+str(lastPL) ,15)
                 ps.sendline(scaleAction['scriptpath']+' '+str(lastPL)+' in &')
+                latestScaleAction['scale'], latestScaleAction['vm'] = 'in', 'CSCF-PL-'+str(lastPL)
                 ps.sendline('echo "'+scaleAction['scriptpath']+' '+str(lastPL)+' in">dispatchedCommand')
                 log.info('Scaling in PL-%d' %(lastPL))
                 frontEndEventStack.append('Server-response: Scaling in PL-'+ str(lastPL)+'#{"scaling":"start"}')
+                scaleActionCompletionChecker = ThreadInterruptable(target = checkScalingActionCompletion)
+                scaleActionCompletionChecker.start()
+                allThreads.append(scaleActionCompletionChecker)
                 apploadDelay = 20
             appreloaderThread = ThreadInterruptable(target=__refreshApps, args=(apploadDelay,), name='appreloaderThread')
             appreloaderThread.start()
@@ -265,6 +274,29 @@ def button_action_scale(actionType):
         except pexpectEndOfFile:
             log.error('Error scaling %s PL-%d' %(actionType, lastPL))
             return
+
+def __filler_messages(vmName):
+    messages = [vmName+' has been booted up successfully #{}',vmName+' is registered to the cluster #{}', vmName+' is being enabled #{}' , vmName+' is being prepared for traffic handling #{}']
+    for aMessage in messages:
+        time.sleep(60)
+        frontEndEventStack.append(aMessage)        
+ 
+def checkScalingActionCompletion():
+    if latestScaleAction['scale']=='out':
+        __fillerMessagesThread = ThreadInterruptable(target=__filler_messages, args=(latestScaleAction['vm'], ))
+        __fillerMessagesThread.start()
+        allThreads.append(__fillerMessagesThread)
+    while threadsRunning.is_set():
+        if latestScaleAction['scale']=='out' and latestScaleAction['vm'] in callLoadDict:
+            if callLoadDict[latestScaleAction['vm']]['calls'] > 0:
+                log.info('Scaling out %s complete' %(latestScaleAction['vm']))
+                frontEndEventStack.append('Server-response: Scaling action complete #{"scaling":"stop"}')
+                return
+        elif latestScaleAction['scale']=='in' and latestScaleAction['vm'] not in mlp.latestApps:
+            frontEndEventStack.append('Server-response: Scaling action complete #{"scaling":"stop"}')
+            log.info('Scaling in %s complete' %(latestScaleAction['vm']))
+            return
+        time.sleep(fetchInterval)
 
 
 class ThreadInterruptable(Thread):
@@ -317,7 +349,6 @@ class GUIHandler(BaseHTTPRequestHandler):
                 self.wfile.write(bytes(json.dumps(mlp.eventsMap), 'UTF-8'))
                 return
             elif self.path == '/frontEndEventStack':
-                #self.wfile.write(bytes(frontEndEventStack.pop(0) if len(frontEndEventStack)>0 else "null", 'UTF-8'))
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
@@ -388,8 +419,9 @@ if __name__ == '__main__':
     callLoadGetterThread = ThreadInterruptable(target=update_with_call_load, name="callLoadGetterThread")
     appPutterThread = ThreadInterruptable(target=mlp.updateQsWithRegexes, args=(['sudo tail -f /var/log/cmha/main.log | grep -v DEBUG'], qwrs_2), name="appPutterThread")
     appGetterThread = ThreadInterruptable(target=mlp.startMappingEventsLive, args=(qwrs_2,), name="appGetterThread")
-    __dummyThread = ThreadInterruptable(target=__sendDummyEventsToGUI)
-    allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread, __dummyThread]
+    #Thread for debugging the front end by sending dummy event messages.
+    ##__dummyThread = ThreadInterruptable(target=__sendDummyEventsToGUI, name='__dummyGuiInputThread')
+    allThreads += [serviceListPullThread, GUIserverThread, dictMergerThread, callLoadGetterThread, appPutterThread, appGetterThread]
     try:
         log.info('GUI running at %s:%d' %(GUIIP, GUIPort))
         for aThread in allThreads: 
