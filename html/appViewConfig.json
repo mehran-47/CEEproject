@@ -1,85 +1,17 @@
 {
-    "Backendv-1":{
+    "MTAS-PL3":{
         "isDemoCase":false,
-        "visibility":false
+        "visibility":true
     },
     "Backendv-2":{
         "isDemoCase":false,
         "visibility":false
     },
-    "CSCF-PL-3":{
-        "isDemoCase":true,
-        "visibility":true
-    },
-    "CSCF-PL-4":{
-        "isDemoCase":true,
-        "visibility":true
-    },
-    "CSCF-PL-5":{
-        "isDemoCase":true,
-        "visibility":true
-    },
-    "CSCF-PL-6":{
-        "isDemoCase":true,
-        "visibility":true
-    },
-    "CSCF-SC-1":{
-        "isDemoCase":true,
-        "visibility":true
-    },
-    "CSCF-SC-2":{
-        "isDemoCase":true,
-        "visibility":true
-    },
-    "GUI-VM":{
+    "etmereu_ubuntu":{
         "isDemoCase":false,
         "visibility":false
     },
-    "GUI-VM_Desk":{
-        "isDemoCase":false,
-        "visibility":false
-    },
-    "IPW-PL-3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-PL-4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-PL3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-PL4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-SC-1":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-SC-2":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-SC1":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPW-SC2":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPWorks-PL3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPWorks-PL4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "IPWorks-SC1":{
+    "MTAS-PL4":{
         "isDemoCase":false,
         "visibility":true
     },
@@ -87,71 +19,15 @@
         "isDemoCase":false,
         "visibility":true
     },
-    "MRS-BGF":{
+    "IPW-SC-1":{
         "isDemoCase":false,
         "visibility":true
     },
-    "MRSv":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-15B-PL-3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-15B-PL-4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-15B-SC-1":{
-        "isDemoCase":false,
+    "CSCF-SC-1":{
+        "isDemoCase":true,
         "visibility":true
     },
     "MTAS-15B-SC-2":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-PL-3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-PL-4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-PL3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-PL4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-SC-1":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-SC-2":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-SC1":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "MTAS-SC2":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "SBG-PL-3":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "SBG-PL-4":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "SBG-SC-1":{
         "isDemoCase":false,
         "visibility":true
     },
@@ -159,19 +35,11 @@
         "isDemoCase":false,
         "visibility":true
     },
-    "TESt12":{
-        "isDemoCase":false,
+    "CSCF-PL-4":{
+        "isDemoCase":true,
         "visibility":true
     },
-    "ToolServerW":{
-        "isDemoCase":false,
-        "visibility":false
-    },
-    "cs-atlas2":{
-        "isDemoCase":false,
-        "visibility":true
-    },
-    "etmereu_ubuntu":{
+    "GUI-VM":{
         "isDemoCase":false,
         "visibility":false
     },
@@ -179,11 +47,143 @@
         "isDemoCase":false,
         "visibility":false
     },
-    "etmereu_ubuntu2":{
+    "Backendv-1":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "MTAS-SC1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPW-PL-4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC-2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPW-SC-2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "SBG-PL-3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPW-SC2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-15B-PL-3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "cs-atlas2":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "IPWorks-PL4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "TESt12":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "CSCF-PL-5":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-SC1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPWorks-SC1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "ToolServerW":{
         "isDemoCase":false,
         "visibility":false
     },
     "test":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-15B-PL-4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-PL-4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC2":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "SBG-SC-1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "SBG-PL-4":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "etmereu_ubuntu2":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "MRS-BGF":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "CSCF-SC-2":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "MRSv":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-SC-1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPW-PL3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "GUI-VM_Desk":{
+        "isDemoCase":false,
+        "visibility":false
+    },
+    "CSCF-PL-6":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPWorks-PL3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-15B-SC-1":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "IPW-PL-3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "MTAS-PL-3":{
+        "isDemoCase":false,
+        "visibility":true
+    },
+    "CSCF-PL-3":{
+        "isDemoCase":true,
+        "visibility":true
+    },
+    "IPW-PL4":{
         "isDemoCase":false,
         "visibility":true
     }

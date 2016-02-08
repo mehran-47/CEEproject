@@ -3,7 +3,7 @@
 
 | Source file                     | Usage/Description                                                                               |
 |---------------------------------|-------------------------------------------------------------------------------------------------|
-| GUIserver.py                    | ./GUIserver.py                                                                           		|
+| GUIserver.py                    | ./GUIserver.py (or bin/python3 .GUIserver.py)                                              		|
 |                                 | the most basic usage, will run the GUI Server on the local host with the address provided in the|
 |                                 | config.json file.                                                                               |
 |                                 | ./GUIserver.py debug                                                                            |
